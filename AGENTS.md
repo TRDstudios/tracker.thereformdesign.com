@@ -8,7 +8,7 @@ Before any Next.js work, find and read the relevant doc in `node_modules/next/di
 
 ## Commands (pnpm)
 
-- `pnpm dev` — dev server (Turbopack default, do NOT add `--turbopack`)
+- `pnpm dev` — dev server (uses webpack for lower memory usage; set via `--webpack`)
 - `pnpm build` — production build (Turbopack; does NOT lint; output in `.next/`)
 - `pnpm start` — start production server
 - `pnpm lint` — ESLint (NOT `next lint`; that command is removed in Next.js 16)

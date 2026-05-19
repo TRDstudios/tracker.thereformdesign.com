@@ -4,7 +4,6 @@ import { db } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { EditProjectForm } from "./edit-form";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default async function EditProjectPage(props: {
   params: Promise<{ id: string }>;
@@ -21,15 +20,15 @@ export default async function EditProjectPage(props: {
   if (!project) redirect("/projects");
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
+    <div className="mx-auto max-w-lg space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Edit Project</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
+          Edit Project
+        </h1>
       </div>
-      <Card>
-        <CardContent className="pt-6">
-          <EditProjectForm project={project} />
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <EditProjectForm project={project} />
+      </div>
     </div>
   );
 }

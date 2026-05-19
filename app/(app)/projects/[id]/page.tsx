@@ -6,13 +6,7 @@ import { projects, tasks, projectMembers, users } from "@/lib/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Plus, Pencil, Users } from "lucide-react";
+import { Plus, Pencil, Users, FolderKanban } from "lucide-react";
 import { DeleteProjectButton } from "./delete-project-button";
 import { ProjectMembers } from "./project-members";
 
@@ -59,13 +53,18 @@ export default async function ProjectDetailPage(props: {
     .where(eq(projectMembers.projectId, id));
 
   const userIds = memberRows.map((m) => m.userId);
-  const memberUsers = userIds.length > 0
-    ? await db.select().from(users).where(inArray(users.id, userIds))
-    : [];
+  const memberUsers =
+    userIds.length > 0
+      ? await db.select().from(users).where(inArray(users.id, userIds))
+      : [];
 
   const members = memberRows.map((m) => ({
     ...m,
-    user: memberUsers.find((u) => u.id === m.userId) || { name: "Unknown", email: "" },
+    user:
+      memberUsers.find((u) => u.id === m.userId) || {
+        name: "Unknown",
+        email: "",
+      },
   }));
 
   const allUsers = await db
@@ -74,26 +73,36 @@ export default async function ProjectDetailPage(props: {
     .orderBy(users.name);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {project.name}
-            </h1>
-            <Badge
-              variant={project.status === "active" ? "default" : "secondary"}
-            >
-              {project.status}
-            </Badge>
+    <div className="space-y-8">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f5eb10]/20">
+            <FolderKanban className="h-6 w-6 text-[#1d1d1d]" />
           </div>
-          <p className="text-sm text-zinc-500">
-            {project.description || "No description"}
-          </p>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
+                {project.name}
+              </h1>
+              <Badge
+                variant={project.status === "active" ? "default" : "secondary"}
+                className="rounded-md"
+              >
+                {project.status}
+              </Badge>
+            </div>
+            <p className="mt-1 text-sm text-[#1d1d1d]/50">
+              {project.description || "No description"}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Link href={`/projects/${project.id}/edit`}>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-lg border-[#e5e5e5]"
+            >
               <Pencil className="mr-1 h-4 w-4" /> Edit
             </Button>
           </Link>
@@ -101,27 +110,28 @@ export default async function ProjectDetailPage(props: {
             <DeleteProjectButton projectId={project.id} />
           )}
           <Link href={`/tasks/new?projectId=${project.id}`}>
-            <Button size="sm">
+            <Button
+              size="sm"
+              className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
+            >
               <Plus className="mr-1 h-4 w-4" /> New Task
             </Button>
           </Link>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Users className="h-4 w-4" /> Members ({members.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1d1d1d]">
+          <Users className="h-4 w-4 text-[#f5eb10]" /> Members ({members.length})
+        </h3>
+        <div className="mt-4">
           <ProjectMembers
             members={members}
             allUsers={allUsers}
             projectId={id}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <div className="grid grid-cols-5 gap-4">
         {(["backlog", "todo", "in_progress", "review", "done"] as const).map(
@@ -131,13 +141,13 @@ export default async function ProjectDetailPage(props: {
             );
             return (
               <div key={status} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3
-                    className={`rounded-md px-2 py-1 text-xs font-medium ${statusColors[status]}`}
+                <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm border">
+                  <span
+                    className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${statusColors[status]}`}
                   >
                     {statusLabels[status]}
-                  </h3>
-                  <span className="text-xs text-zinc-400">
+                  </span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#f5f5f4] text-[11px] font-medium text-[#1d1d1d]/60">
                     {columnTasks.length}
                   </span>
                 </div>
@@ -146,11 +156,13 @@ export default async function ProjectDetailPage(props: {
                     <Link
                       key={task.id}
                       href={`/tasks/${task.id}`}
-                      className="block rounded-lg border bg-white p-3 transition-colors hover:bg-zinc-50"
+                      className="block rounded-lg border bg-white p-3 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
                     >
-                      <p className="text-sm font-medium">{task.title}</p>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500">
-                        <Badge variant="outline" className="text-[10px]">
+                      <p className="text-sm font-medium text-[#1d1d1d]">
+                        {task.title}
+                      </p>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-[#1d1d1d]/50">
+                        <Badge variant="outline" className="rounded text-[10px]">
                           {task.priority}
                         </Badge>
                         {task.dueDate && (
@@ -162,7 +174,7 @@ export default async function ProjectDetailPage(props: {
                     </Link>
                   ))}
                   {columnTasks.length === 0 && (
-                    <div className="rounded-lg border border-dashed p-3 text-center text-xs text-zinc-400">
+                    <div className="rounded-lg border border-dashed border-[#e5e5e5] p-4 text-center text-xs text-[#1d1d1d]/30">
                       No tasks
                     </div>
                   )}

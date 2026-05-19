@@ -21,7 +21,12 @@ export function DeleteTaskButton({ taskId }: { taskId: string }) {
   };
 
   return (
-    <Button variant="destructive" size="sm" onClick={handleDelete}>
+    <Button
+      variant="destructive"
+      size="sm"
+      onClick={handleDelete}
+      className="rounded-lg"
+    >
       <Trash2 className="mr-1 h-4 w-4" /> Delete
     </Button>
   );

@@ -50,28 +50,41 @@ export function EditTaskForm({
   );
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="title">Task Title</Label>
-        <Input id="title" name="title" required defaultValue={task.title} />
+        <Label htmlFor="title" className="text-sm font-medium text-[#1d1d1d]">
+          Task Title
+        </Label>
+        <Input
+          id="title"
+          name="title"
+          required
+          defaultValue={task.title}
+          className="h-10 rounded-lg border-[#e5e5e5] bg-white text-[#1d1d1d] placeholder:text-[#a1a1a1] focus:border-[#f5eb10] focus:ring-[#f5eb10]"
+        />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description" className="text-sm font-medium text-[#1d1d1d]">
+          Description
+        </Label>
         <Textarea
           id="description"
           name="description"
           rows={4}
           defaultValue={task.description || ""}
+          className="rounded-lg border-[#e5e5e5] bg-white text-[#1d1d1d] placeholder:text-[#a1a1a1] focus:border-[#f5eb10] focus:ring-[#f5eb10]"
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="projectId">Project</Label>
+          <Label htmlFor="projectId" className="text-sm font-medium text-[#1d1d1d]">
+            Project
+          </Label>
           <select
             id="projectId"
             name="projectId"
             defaultValue={task.projectId || ""}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="flex h-10 w-full rounded-lg border border-[#e5e5e5] bg-white px-3 py-1 text-sm text-[#1d1d1d] transition-colors focus:border-[#f5eb10] focus:ring-[#f5eb10] focus-visible:outline-none focus-visible:ring-1"
           >
             <option value="">No project</option>
             {projects.map((p) => (
@@ -82,12 +95,14 @@ export function EditTaskForm({
           </select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="priority">Priority</Label>
+          <Label htmlFor="priority" className="text-sm font-medium text-[#1d1d1d]">
+            Priority
+          </Label>
           <select
             id="priority"
             name="priority"
             defaultValue={task.priority}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="flex h-10 w-full rounded-lg border border-[#e5e5e5] bg-white px-3 py-1 text-sm text-[#1d1d1d] transition-colors focus:border-[#f5eb10] focus:ring-[#f5eb10] focus-visible:outline-none focus-visible:ring-1"
           >
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -96,12 +111,14 @@ export function EditTaskForm({
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="assigneeId">Assignee</Label>
+        <Label htmlFor="assigneeId" className="text-sm font-medium text-[#1d1d1d]">
+          Assignee
+        </Label>
         <select
           id="assigneeId"
           name="assigneeId"
           defaultValue={task.assigneeId || ""}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="flex h-10 w-full rounded-lg border border-[#e5e5e5] bg-white px-3 py-1 text-sm text-[#1d1d1d] transition-colors focus:border-[#f5eb10] focus:ring-[#f5eb10] focus-visible:outline-none focus-visible:ring-1"
         >
           <option value="">Unassigned</option>
           {users.map((u) => (
@@ -112,7 +129,9 @@ export function EditTaskForm({
         </select>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="dueDate">Due Date</Label>
+        <Label htmlFor="dueDate" className="text-sm font-medium text-[#1d1d1d]">
+          Due Date
+        </Label>
         <Input
           id="dueDate"
           name="dueDate"
@@ -122,13 +141,23 @@ export function EditTaskForm({
               ? new Date(task.dueDate).toISOString().split("T")[0]
               : ""
           }
+          className="h-10 rounded-lg border-[#e5e5e5] bg-white text-[#1d1d1d] focus:border-[#f5eb10] focus:ring-[#f5eb10]"
         />
       </div>
       <div className="flex gap-3">
-        <Button type="submit" disabled={pending}>
+        <Button
+          type="submit"
+          disabled={pending}
+          className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
+        >
           {pending ? "Saving..." : "Save"}
         </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          className="rounded-lg border-[#e5e5e5] text-[#1d1d1d]/60"
+        >
           Cancel
         </Button>
       </div>

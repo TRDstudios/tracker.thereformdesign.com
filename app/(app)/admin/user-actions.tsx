@@ -5,10 +5,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { updateUserRole, deleteUser } from "@/lib/actions/admin";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const roles = [
   { value: "user", label: "User" },
@@ -19,14 +21,19 @@ const roles = [
 export function UserActions({
   userId,
   currentRole,
+  isSuperAdmin,
 }: {
   userId: string;
   currentRole: string;
+  isSuperAdmin: boolean;
 }) {
+  const router = useRouter();
+
   const handleRoleChange = async (role: string) => {
     try {
       await updateUserRole(userId, role);
       toast.success(`Role updated to ${role}`);
+      router.refresh();
     } catch {
       toast.error("Failed to update role");
     }
@@ -37,6 +44,7 @@ export function UserActions({
     try {
       await deleteUser(userId);
       toast.success("User deleted");
+      router.refresh();
     } catch {
       toast.error("Failed to delete user");
     }
@@ -44,22 +52,31 @@ export function UserActions({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700">
+      <DropdownMenuTrigger className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[#a1a1a1] transition-colors hover:bg-[#f5f5f4] hover:text-[#1d1d1d]">
         <MoreHorizontal className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {roles.map((r) => (
-          <DropdownMenuItem
-            key={r.value}
-            disabled={r.value === currentRole}
-            onSelect={() => handleRoleChange(r.value)}
-          >
-            Make {r.label}
+        {isSuperAdmin ? (
+          <>
+            {roles.map((r) => (
+              <DropdownMenuItem
+                key={r.value}
+                disabled={r.value === currentRole}
+                onSelect={() => handleRoleChange(r.value)}
+              >
+                Make {r.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={handleDelete} className="text-red-500">
+              Delete user
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <DropdownMenuItem disabled className="text-[#a1a1a1]">
+            Role changes restricted
           </DropdownMenuItem>
-        ))}
-        <DropdownMenuItem onSelect={handleDelete} className="text-red-600">
-          Delete user
-        </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

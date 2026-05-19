@@ -4,7 +4,6 @@ import { db } from "@/lib/db";
 import { tasks, projects, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { EditTaskForm } from "./edit-form";
-import { Card, CardContent } from "@/components/ui/card";
 import { sql } from "drizzle-orm";
 
 export default async function EditTaskPage(props: {
@@ -30,15 +29,15 @@ export default async function EditTaskPage(props: {
     .orderBy(users.name);
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
+    <div className="mx-auto max-w-lg space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Edit Task</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
+          Edit Task
+        </h1>
       </div>
-      <Card>
-        <CardContent className="pt-6">
-          <EditTaskForm task={task} projects={allProjects} users={allUsers} />
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <EditTaskForm task={task} projects={allProjects} users={allUsers} />
+      </div>
     </div>
   );
 }

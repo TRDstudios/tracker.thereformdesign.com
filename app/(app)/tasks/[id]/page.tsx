@@ -11,15 +11,8 @@ import {
 } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Pencil } from "lucide-react";
+import { Pencil, ListTodo } from "lucide-react";
 import { StatusButtons } from "./status-buttons";
 import { CommentForm } from "./comment-form";
 import { DeleteTaskButton } from "./delete-task-button";
@@ -40,7 +33,7 @@ const statusColors: Record<string, string> = {
   done: "bg-green-100 text-green-700",
 };
 
-const priorityColors: Record<string, "outline" | "secondary" | "default"> = {
+const priorityBadge: Record<string, "outline" | "secondary" | "default"> = {
   low: "outline",
   medium: "secondary",
   high: "default",
@@ -86,36 +79,45 @@ export default async function TaskDetailPage(props: {
     .orderBy(desc(activityLogs.createdAt));
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {task.title}
-          </h1>
-          <Badge variant={priorityColors[task.priority]}>
-            {task.priority}
-          </Badge>
-          <span
-            className={`rounded-md px-2 py-0.5 text-xs font-medium ${statusColors[task.status]}`}
-          >
-            {statusLabels[task.status]}
-          </span>
+    <div className="mx-auto max-w-3xl space-y-8">
+      <div className="flex items-start gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f5eb10]/20">
+          <ListTodo className="h-6 w-6 text-[#1d1d1d]" />
         </div>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-zinc-500">
-            {project?.name && `${project.name} · `}
-            Created by {author?.name || "Unknown"}
-            {assignee?.name && ` · Assigned to ${assignee.name}`}
-            {task.dueDate &&
-              ` · Due ${new Date(task.dueDate).toLocaleDateString()}`}
-          </p>
-          <div className="flex items-center gap-2">
-            <Link href={`/tasks/${id}/edit`}>
-              <Button variant="outline" size="sm">
-                <Pencil className="mr-1 h-4 w-4" /> Edit
-              </Button>
-            </Link>
-            <DeleteTaskButton taskId={id} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
+              {task.title}
+            </h1>
+            <Badge variant={priorityBadge[task.priority]} className="rounded-md">
+              {task.priority}
+            </Badge>
+            <span
+              className={`rounded-md px-2 py-0.5 text-xs font-medium ${statusColors[task.status]}`}
+            >
+              {statusLabels[task.status]}
+            </span>
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-4">
+            <p className="text-sm text-[#1d1d1d]/50">
+              {project?.name && `${project.name} · `}
+              Created by {author?.name || "Unknown"}
+              {assignee?.name && ` · Assigned to ${assignee.name}`}
+              {task.dueDate &&
+                ` · Due ${new Date(task.dueDate).toLocaleDateString()}`}
+            </p>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href={`/tasks/${id}/edit`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg border-[#e5e5e5]"
+                >
+                  <Pencil className="mr-1 h-4 w-4" /> Edit
+                </Button>
+              </Link>
+              <DeleteTaskButton taskId={id} />
+            </div>
           </div>
         </div>
       </div>
@@ -123,36 +125,37 @@ export default async function TaskDetailPage(props: {
       <StatusButtons taskId={id} currentStatus={task.status} />
 
       {task.description && (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="whitespace-pre-wrap text-sm">{task.description}</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <p className="whitespace-pre-wrap text-sm text-[#1d1d1d]/80 leading-relaxed">
+            {task.description}
+          </p>
+        </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Activity</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-semibold text-[#1d1d1d]">
+          Activity
+        </h3>
+        <div className="mt-5 space-y-4">
           {taskComments.map((comment) => (
             <div key={comment.id} className="space-y-1">
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs font-medium text-[#f5eb10]">
                 {userNames.get(comment.authorId) || "Unknown"}
               </p>
-              <p className="text-sm">{comment.content}</p>
+              <p className="text-sm text-[#1d1d1d]/80">{comment.content}</p>
             </div>
           ))}
-          <Separator />
+          <div className="border-t border-[#e5e5e5]" />
           {logs.map((log) => (
-            <p key={log.id} className="text-xs text-zinc-400">
+            <p key={log.id} className="text-xs text-[#1d1d1d]/40">
               {userNames.get(log.userId) || "Someone"}{" "}
               {log.action.replace(/_/g, " ")}
             </p>
           ))}
+          <div className="border-t border-[#e5e5e5]" />
           <CommentForm taskId={id} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

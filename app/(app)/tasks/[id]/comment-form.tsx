@@ -21,8 +21,14 @@ export function CommentForm({ taskId }: { taskId: string }) {
         placeholder="Add a comment..."
         rows={2}
         required
+        className="rounded-lg border-[#e5e5e5] bg-white text-sm text-[#1d1d1d] placeholder:text-[#a1a1a1] focus:border-[#f5eb10] focus:ring-[#f5eb10]"
       />
-      <Button type="submit" size="sm" disabled={pending}>
+      <Button
+        type="submit"
+        size="sm"
+        disabled={pending}
+        className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
+      >
         {pending ? "Posting..." : "Comment"}
       </Button>
     </form>

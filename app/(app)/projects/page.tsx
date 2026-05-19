@@ -4,9 +4,8 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Plus, FolderKanban } from "lucide-react";
 
 export default async function ProjectsPage() {
   const session = await auth();
@@ -23,48 +22,59 @@ export default async function ProjectsPage() {
 
   const visibleProjects = isAdmin
     ? allProjects
-    : allProjects.filter(
-        (p) =>
-          p.ownerId === userId,
-      );
+    : allProjects.filter((p) => p.ownerId === userId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
-          <p className="text-sm text-zinc-500">Manage your projects</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
+            Projects
+          </h1>
+          <p className="mt-1 text-sm text-[#1d1d1d]/50">
+            Manage your projects
+          </p>
         </div>
         <Link href="/projects/new">
-          <Button>
+          <Button className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm">
             <Plus className="mr-1 h-4 w-4" /> New Project
           </Button>
         </Link>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {visibleProjects.map((project) => (
           <Link key={project.id} href={`/projects/${project.id}`}>
-            <Card className="transition-colors hover:bg-zinc-50">
-              <CardHeader>
-                <CardTitle className="text-base">{project.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-3 line-clamp-2 text-sm text-zinc-500">
-                  {project.description || "No description"}
-                </p>
+            <div className="group rounded-xl border bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f5eb10]/20">
+                  <FolderKanban className="h-5 w-5 text-[#1d1d1d]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-[#1d1d1d] truncate">
+                    {project.name}
+                  </h3>
+                  <p className="mt-0.5 text-xs text-[#1d1d1d]/50">
+                    {project.description
+                      ? project.description.length > 60
+                        ? project.description.slice(0, 60) + "..."
+                        : project.description
+                      : "No description"}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center gap-2">
                 <Badge
-                  variant={
-                    project.status === "active" ? "default" : "secondary"
-                  }
+                  variant={project.status === "active" ? "default" : "secondary"}
+                  className="rounded-md text-[10px] font-medium"
                 >
                   {project.status}
                 </Badge>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </Link>
         ))}
         {visibleProjects.length === 0 && (
-          <div className="col-span-full py-12 text-center text-sm text-zinc-500">
+          <div className="col-span-full py-16 text-center text-sm text-[#1d1d1d]/40">
             No projects yet. Create your first project.
           </div>
         )}
