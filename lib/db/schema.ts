@@ -28,6 +28,12 @@ export const projects = pgTable("projects", {
   ownerId: uuid("owner_id")
     .references(() => users.id)
     .notNull(),
+  stack: jsonb("stack").$type<string[]>(),
+  liveUrl: text("live_url"),
+  demoUrl: text("demo_url"),
+  features: jsonb("features").$type<{ name: string; completed: boolean }[]>(),
+  serverDetails: text("server_details"),
+  domainDetails: text("domain_details"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [

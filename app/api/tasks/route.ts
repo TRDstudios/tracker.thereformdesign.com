@@ -35,6 +35,8 @@ export async function GET(request: NextRequest) {
     { filterType: string; type: string; filter?: string; filterTo?: string }
   >;
 
+  const projectId = searchParams.get("projectId");
+
   const isAdmin =
     session.user.role === "super_admin" || session.user.role === "admin";
 
@@ -42,6 +44,10 @@ export async function GET(request: NextRequest) {
 
   if (!isAdmin) {
     conditions.push(eq(tasks.assigneeId, session.user.id));
+  }
+
+  if (projectId) {
+    conditions.push(eq(tasks.projectId, projectId));
   }
 
   for (const [field, filter] of Object.entries(filterModel)) {

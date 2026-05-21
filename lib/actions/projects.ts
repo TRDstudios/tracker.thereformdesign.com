@@ -22,11 +22,27 @@ export async function createProject(formData: FormData) {
   if (!session?.user) throw new Error("Unauthorized");
   await checkRateLimit("createProject");
 
-  const parsed = createProjectSchema.parse(Object.fromEntries(formData));
+  const raw = Object.fromEntries(formData);
+  const parsed = createProjectSchema.parse({
+    ...raw,
+    stack: raw.stack ? JSON.parse(raw.stack as string) : undefined,
+    features: raw.features ? JSON.parse(raw.features as string) : undefined,
+    memberIds: raw.memberIds ? JSON.parse(raw.memberIds as string) : undefined,
+  });
 
   const [project] = await db
     .insert(projects)
-    .values({ name: parsed.name, description: parsed.description ?? null, ownerId: session.user.id })
+    .values({
+      name: parsed.name,
+      description: parsed.description ?? null,
+      ownerId: session.user.id,
+      stack: parsed.stack ?? null,
+      liveUrl: parsed.liveUrl ?? null,
+      demoUrl: parsed.demoUrl ?? null,
+      features: parsed.features ?? null,
+      serverDetails: parsed.serverDetails ?? null,
+      domainDetails: parsed.domainDetails ?? null,
+    })
     .returning();
 
   await db.insert(projectMembers).values({
@@ -34,6 +50,16 @@ export async function createProject(formData: FormData) {
     userId: session.user.id,
     role: "admin",
   });
+
+  if (parsed.memberIds?.length) {
+    await db.insert(projectMembers).values(
+      parsed.memberIds.map((uid) => ({
+        projectId: project.id,
+        userId: uid,
+        role: "member" as const,
+      })),
+    ).onConflictDoNothing();
+  }
 
   await db.insert(activityLogs).values({
     userId: session.user.id,
@@ -51,7 +77,12 @@ export async function updateProject(id: string, formData: FormData) {
   if (!session?.user) throw new Error("Unauthorized");
   await checkRateLimit("updateProject");
 
-  const parsed = updateProjectSchema.parse(Object.fromEntries(formData));
+  const raw = Object.fromEntries(formData);
+  const parsed = updateProjectSchema.parse({
+    ...raw,
+    stack: raw.stack ? JSON.parse(raw.stack as string) : undefined,
+    features: raw.features ? JSON.parse(raw.features as string) : undefined,
+  });
 
   await db
     .update(projects)
@@ -59,6 +90,12 @@ export async function updateProject(id: string, formData: FormData) {
       name: parsed.name,
       description: parsed.description ?? null,
       status: parsed.status,
+      stack: parsed.stack ?? null,
+      liveUrl: parsed.liveUrl ?? null,
+      demoUrl: parsed.demoUrl ?? null,
+      features: parsed.features ?? null,
+      serverDetails: parsed.serverDetails ?? null,
+      domainDetails: parsed.domainDetails ?? null,
       updatedAt: new Date(),
     })
     .where(eq(projects.id, id));

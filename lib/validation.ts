@@ -36,15 +36,33 @@ export const updateTaskSchema = z.object({
   dueDate: z.string().nullable().optional(),
 });
 
+export const featureSchema = z.object({
+  name: z.string().min(1).max(200),
+  completed: z.boolean().default(false),
+});
+
 export const createProjectSchema = z.object({
   name: nameSchema,
   description: descriptionSchema,
+  stack: z.array(z.string().max(100)).optional(),
+  liveUrl: z.string().max(500).nullable().optional(),
+  demoUrl: z.string().max(500).nullable().optional(),
+  features: z.array(featureSchema).optional(),
+  serverDetails: z.string().max(200).nullable().optional(),
+  domainDetails: z.string().max(200).nullable().optional(),
+  memberIds: z.array(z.string().uuid()).optional(),
 });
 
 export const updateProjectSchema = z.object({
   name: nameSchema,
   description: descriptionSchema,
   status: projectStatusSchema,
+  stack: z.array(z.string().max(100)).optional(),
+  liveUrl: z.string().max(500).nullable().optional(),
+  demoUrl: z.string().max(500).nullable().optional(),
+  features: z.array(featureSchema).optional(),
+  serverDetails: z.string().max(200).nullable().optional(),
+  domainDetails: z.string().max(200).nullable().optional(),
 });
 
 export const userIdSchema = z.string().min(2, "User ID must be at least 2 characters").max(50);

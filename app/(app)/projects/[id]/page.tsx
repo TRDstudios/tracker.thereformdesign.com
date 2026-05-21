@@ -2,29 +2,15 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { projects, tasks, projectMembers } from "@/lib/db/schema";
+import { projects } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Users, FolderKanban } from "lucide-react";
+import { Plus, Pencil, FolderKanban } from "lucide-react";
 import { DeleteProjectButton } from "./delete-project-button";
-import { ProjectMembers } from "./project-members";
 import { TaskCreatePanel } from "@/app/(app)/tasks/task-create-panel";
 import { getAllUsers, getAllProjects } from "@/lib/data";
-
-const statusLabels: Record<string, string> = {
-  todo: "To Do",
-  in_progress: "In Progress",
-  review: "Review",
-  done: "Done",
-};
-
-const statusColors: Record<string, string> = {
-  todo: "bg-blue-100 text-blue-700",
-  in_progress: "bg-amber-100 text-amber-700",
-  review: "bg-purple-100 text-purple-700",
-  done: "bg-green-100 text-green-700",
-};
+import { ProjectTasksGrid } from "./project-tasks-grid";
 
 export default async function ProjectDetailPage(props: {
   params: Promise<{ id: string }>;
@@ -41,25 +27,7 @@ export default async function ProjectDetailPage(props: {
 
   if (!project) redirect("/projects");
 
-  const projectTasks = await db
-    .select()
-    .from(tasks)
-    .where(eq(tasks.projectId, id))
-    .orderBy(tasks.createdAt);
-
-  const memberRows = await db
-    .select()
-    .from(projectMembers)
-    .where(eq(projectMembers.projectId, id));
-
   const allUsers = await getAllUsers();
-  const userMap = new Map(allUsers.map((u) => [u.id, u]));
-
-  const members = memberRows.map((m) => ({
-    ...m,
-    user: userMap.get(m.userId) || { name: "Unknown", email: "" },
-  }));
-
   const allProjects = await getAllProjects();
 
   return (
@@ -114,69 +82,112 @@ export default async function ProjectDetailPage(props: {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white p-5 shadow-sm">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1d1d1d]">
-          <Users className="h-4 w-4 text-[#f5eb10]" /> Members ({members.length})
-        </h3>
-        <div className="mt-4">
-          <ProjectMembers
-            members={members}
-            allUsers={allUsers}
-            projectId={id}
-          />
-        </div>
+      <div className="grid grid-cols-3 gap-4">
+        {project.stack?.length ? (
+          <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1d1d1d]">
+              <svg className="h-4 w-4 text-[#f5eb10]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
+              Stack
+            </h3>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {project.stack.map((s: string) => (
+                <span key={s} className="rounded-md bg-[#f5f5f4] px-2.5 py-1 text-xs font-medium text-[#1d1d1d]/70">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {(project.liveUrl || project.demoUrl) ? (
+          <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1d1d1d]">
+              <svg className="h-4 w-4 text-[#f5eb10]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.035-.529A4.5 4.5 0 008.242 4.5l-4.5 4.5" /></svg>
+              URLs
+            </h3>
+            <div className="mt-3 space-y-1.5">
+              {project.liveUrl ? (
+                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="block truncate text-xs text-[#1d1d1d]/70 hover:text-[#f5eb10] hover:underline transition-colors">
+                  <span className="font-medium text-[#1d1d1d]/50">Live:</span> {project.liveUrl}
+                </a>
+              ) : null}
+              {project.demoUrl ? (
+                <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="block truncate text-xs text-[#1d1d1d]/70 hover:text-[#f5eb10] hover:underline transition-colors">
+                  <span className="font-medium text-[#1d1d1d]/50">Demo:</span> {project.demoUrl}
+                </a>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        {(project.serverDetails || project.domainDetails) ? (
+          <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1d1d1d]">
+              <svg className="h-4 w-4 text-[#f5eb10]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
+              Hosting
+            </h3>
+            <div className="mt-3 space-y-1.5">
+              {project.serverDetails ? (
+                <p className="text-xs text-[#1d1d1d]/70">
+                  <span className="font-medium text-[#1d1d1d]/50">Server:</span> {project.serverDetails}
+                </p>
+              ) : null}
+              {project.domainDetails ? (
+                <p className="text-xs text-[#1d1d1d]/70">
+                  <span className="font-medium text-[#1d1d1d]/50">Domain:</span> {project.domainDetails}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        {(["todo", "in_progress", "review", "done"] as const).map(
-          (status) => {
-            const columnTasks = projectTasks.filter(
-              (t) => t.status === status,
-            );
-            return (
-              <div key={status} className="space-y-3">
-                <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm border">
-                  <span
-                    className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${statusColors[status]}`}
-                  >
-                    {statusLabels[status]}
-                  </span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#f5f5f4] text-[11px] font-medium text-[#1d1d1d]/60">
-                    {columnTasks.length}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {columnTasks.map((task) => (
-                    <Link
-                      key={task.id}
-                      href={`/tasks/${task.id}`}
-                      className="block rounded-lg border bg-white p-3 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
-                    >
-                      <p className="text-sm font-medium text-[#1d1d1d]">
-                        {task.title}
-                      </p>
-                      <div className="mt-2 flex items-center gap-2 text-xs text-[#1d1d1d]/50">
-                        <Badge variant="outline" className="rounded text-[10px]">
-                          {task.priority}
-                        </Badge>
-                        {task.dueDate && (
-                          <span>
-                            {new Date(task.dueDate).toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                  {columnTasks.length === 0 && (
-                    <div className="rounded-lg border border-dashed border-[#e5e5e5] p-4 text-center text-xs text-[#1d1d1d]/30">
-                      No tasks
-                    </div>
+      {project.features?.length ? (
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1d1d1d]">
+            <svg className="h-4 w-4 text-[#f5eb10]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Features ({project.features.filter((f: { name: string; completed: boolean }) => f.completed).length}/{project.features.length})
+          </h3>
+          <div className="mt-3 grid grid-cols-2 gap-1.5">
+            {project.features.map((f: { name: string; completed: boolean }, i: number) => (
+              <div key={i} className="flex items-center gap-2 rounded-lg border border-[#e5e5e5] px-3 py-2">
+                <div className={`h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center ${
+                  f.completed ? "border-[#22c55e] bg-[#22c55e]" : "border-[#d4d4d4]"
+                }`}>
+                  {f.completed && (
+                    <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                   )}
                 </div>
+                <span className={`text-sm ${f.completed ? "text-[#a1a1a1] line-through" : "text-[#1d1d1d]"}`}>
+                  {f.name}
+                </span>
               </div>
-            );
-          },
-        )}
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <div>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-[#1d1d1d]">Tasks</h2>
+          <TaskCreatePanel
+            projects={allProjects}
+            users={allUsers}
+            defaultProjectId={id}
+          >
+            <Button
+              size="sm"
+              className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
+            >
+              <Plus className="mr-1 h-4 w-4" /> New Task
+            </Button>
+          </TaskCreatePanel>
+        </div>
+        <ProjectTasksGrid
+          projectId={id}
+          projects={allProjects}
+          users={allUsers}
+        />
       </div>
     </div>
   );
