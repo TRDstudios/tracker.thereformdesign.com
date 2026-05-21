@@ -9,9 +9,11 @@ import {
   FolderKanban,
   ListTodo,
   Shield,
+  LogOut,
   Menu,
   X,
 } from "lucide-react";
+import { logout } from "@/lib/actions/auth";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -94,6 +96,15 @@ export function Sidebar({ userRole }: SidebarProps) {
             </Link>
           )}
         </nav>
+        <div className="border-t border-white/10 p-3">
+          <button
+            onClick={async () => { await logout(); }}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white/60 transition-all duration-150 hover:bg-white/10 hover:text-white"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
+        </div>
       </aside>
     </>
   );

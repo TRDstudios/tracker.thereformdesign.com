@@ -21,6 +21,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .from(users)
           .where(eq(users.email, email));
         if (!user) return null;
+        if (!user.active) return null;
 
         const valid = await compare(password, user.passwordHash);
         if (!valid) return null;

@@ -36,6 +36,13 @@
       "when": 1779345732074,
       "tag": "0004_shiny_dreaming_celestial",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779352476996,
+      "tag": "0005_dark_paladin",
+      "breakpoints": true
     }
   ]
 }

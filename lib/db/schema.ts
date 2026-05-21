@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, index, boolean } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -9,6 +9,7 @@ export const users = pgTable("users", {
     .notNull()
     .default("user"),
   avatar: text("avatar"),
+  active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

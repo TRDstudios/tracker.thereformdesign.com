@@ -13,12 +13,6 @@ export const roleSchema = z.enum(["super_admin", "admin", "user"]);
 export const projectRoleSchema = z.enum(["admin", "member"]);
 export const projectStatusSchema = z.enum(["active", "archived"]);
 
-export const registerSchema = z.object({
-  name: nameSchema,
-  email: emailSchema,
-  password: passwordSchema,
-});
-
 export const loginSchema = z.object({
   email: emailSchema,
   password: passwordSchema,

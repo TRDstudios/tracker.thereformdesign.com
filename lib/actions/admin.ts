@@ -67,6 +67,30 @@ export async function updateUserRole(userId: string, role: string) {
   revalidatePath("/admin");
 }
 
+export async function deactivateUser(userId: string) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "super_admin") {
+    throw new Error("Only super admin can deactivate users");
+  }
+  await checkRateLimit("deactivateUser");
+
+  await db.update(users).set({ active: false }).where(eq(users.id, userId));
+
+  revalidatePath("/admin");
+}
+
+export async function activateUser(userId: string) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "super_admin") {
+    throw new Error("Only super admin can activate users");
+  }
+  await checkRateLimit("activateUser");
+
+  await db.update(users).set({ active: true }).where(eq(users.id, userId));
+
+  revalidatePath("/admin");
+}
+
 export async function deleteUser(userId: string) {
   const session = await auth();
   if (!session?.user || session.user.role !== "super_admin") {

@@ -75,15 +75,7 @@ export function LoginForm() {
       >
         {pending ? "Signing in..." : "Sign in"}
       </Button>
-      <p className="text-center text-sm text-[#1d1d1d]/50">
-        Don&apos;t have an account?{" "}
-        <a
-          href="/register"
-          className="font-semibold text-[#1d1d1d] underline underline-offset-4 hover:text-[#f5eb10] transition-colors"
-        >
-          Sign up
-        </a>
-      </p>
+
     </form>
   );
 }

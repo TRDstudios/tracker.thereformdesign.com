@@ -4,7 +4,7 @@ export function proxy(request: NextRequest) {
   const url = new URL(request.url);
   const { pathname } = url;
 
-  const publicPaths = ["/login", "/register"];
+  const publicPaths = ["/login"];
   if (publicPaths.some((p) => pathname.startsWith(p))) {
     return;
   }

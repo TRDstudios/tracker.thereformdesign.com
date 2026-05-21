@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Settings, ChevronDown, LogOut } from "lucide-react";
+import { Settings, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { logout } from "@/lib/actions/auth";
 
 export function ProfileDropdownClient({
   name,
@@ -23,11 +24,6 @@ export function ProfileDropdownClient({
   initials: string;
 }) {
   const router = useRouter();
-
-  const handleLogout = async () => {
-    await fetch("/api/auth/signout", { method: "POST" });
-    router.push("/login");
-  };
 
   return (
     <DropdownMenu>
@@ -45,7 +41,6 @@ export function ProfileDropdownClient({
             {role.replace("_", " ")}
           </p>
         </div>
-        <ChevronDown className="h-4 w-4 text-[#a1a1a1]" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuGroup>
@@ -61,7 +56,7 @@ export function ProfileDropdownClient({
           <Settings className="h-4 w-4" /> Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={handleLogout}>
+        <DropdownMenuItem onSelect={async () => { await logout(); }}>
           <LogOut className="h-4 w-4" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
