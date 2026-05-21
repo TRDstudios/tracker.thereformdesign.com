@@ -9,7 +9,7 @@ import {
   activityLogs,
   projects,
 } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, gte } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, ListTodo } from "lucide-react";
@@ -49,7 +49,7 @@ export default async function TaskDetailPage(props: {
   const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
   if (!task) redirect("/tasks");
 
-  const allUsers = await db.select().from(users);
+  const allUsers = await db.select({ id: users.id, name: users.name }).from(users);
   const userNames = new Map(allUsers.map((u) => [u.id, u.name]));
 
   const [project] = task.projectId
@@ -62,10 +62,12 @@ export default async function TaskDetailPage(props: {
     .where(eq(comments.taskId, id))
     .orderBy(comments.createdAt);
 
+  // eslint-disable-next-line react-hooks/purity
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
   const logs = await db
     .select()
     .from(activityLogs)
-    .where(eq(activityLogs.entityId, id))
+    .where(and(eq(activityLogs.entityId, id), gte(activityLogs.createdAt, ninetyDaysAgo)))
     .orderBy(desc(activityLogs.createdAt));
 
   return (

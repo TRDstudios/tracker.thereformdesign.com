@@ -1,0 +1,1 @@
+ALTER TABLE "activity_logs" ALTER COLUMN "metadata" SET DATA TYPE jsonb USING metadata::jsonb;

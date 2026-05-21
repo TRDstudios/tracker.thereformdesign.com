@@ -3,10 +3,10 @@
 import { useMemo, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, ICellRendererParams } from "ag-grid-community";
+import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
 import {
   ModuleRegistry,
-  ClientSideRowModelModule,
+  InfiniteRowModelModule,
   TextFilterModule,
   NumberFilterModule,
   DateFilterModule,
@@ -16,7 +16,7 @@ import {
   ValidationModule,
 } from "ag-grid-community";
 import { updateTaskStatus } from "@/lib/actions/tasks";
-import type { TaskRow, GridContext } from "./ag-grid-constants";
+import type { GridContext } from "./ag-grid-constants";
 import {
   StatusCellRenderer,
   PriorityCellRenderer,
@@ -26,7 +26,7 @@ import {
 import { StatusDropdown } from "./ag-grid-status-dropdown";
 
 ModuleRegistry.registerModules([
-  ClientSideRowModelModule,
+  InfiniteRowModelModule,
   TextFilterModule,
   NumberFilterModule,
   DateFilterModule,
@@ -36,7 +36,7 @@ ModuleRegistry.registerModules([
   ValidationModule,
 ]);
 
-export function AgGridTasks({ tasks }: { tasks: TaskRow[] }) {
+export function AgGridTasks() {
   const router = useRouter();
   const [statusTarget, setStatusTarget] = useState<{
     rowId: string;
@@ -129,14 +129,35 @@ export function AgGridTasks({ tasks }: { tasks: TaskRow[] }) {
     setStatusTarget(null);
   }, [statusTarget]);
 
+  const dataSource = useMemo<IDatasource>(() => ({
+    getRows: (params) => {
+      const queryParams = new URLSearchParams({
+        startRow: String(params.startRow),
+        endRow: String(params.endRow),
+        sortModel: JSON.stringify(params.sortModel),
+        filterModel: JSON.stringify(params.filterModel),
+      });
+
+      fetch(`/api/tasks?${queryParams}`)
+        .then((res) => res.json())
+        .then((data) => {
+          params.successCallback(data.rows, data.lastRow);
+        })
+        .catch(() => {
+          params.failCallback();
+        });
+    },
+  }), []);
+
   return (
     <>
       <div className="ag-theme-custom h-[600px] w-full rounded-xl border shadow-sm">
         <AgGridReact
-          rowData={tasks}
           columnDefs={colDefs}
           defaultColDef={defaultColDef}
           context={ctx}
+          rowModelType="infinite"
+          datasource={dataSource}
           pagination={true}
           paginationPageSize={20}
           paginationPageSizeSelector={[10, 20, 50, 100]}
@@ -147,6 +168,8 @@ export function AgGridTasks({ tasks }: { tasks: TaskRow[] }) {
           rowHeight={44}
           headerHeight={44}
           floatingFiltersHeight={36}
+          cacheBlockSize={50}
+          maxBlocksInCache={5}
         />
       </div>
       {statusTarget && (

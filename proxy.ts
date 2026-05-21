@@ -1,4 +1,6 @@
-export function proxy(request: Request) {
+import type { NextRequest } from "next/server";
+
+export function proxy(request: NextRequest) {
   const url = new URL(request.url);
   const { pathname } = url;
 
@@ -7,12 +9,10 @@ export function proxy(request: Request) {
     return;
   }
 
-  // Let NextAuth handle its own routes
   if (pathname.startsWith("/api/auth")) {
     return;
   }
 
-  // Static files
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
@@ -25,6 +25,10 @@ export function proxy(request: Request) {
     return;
   }
 
-  // This is a simplified proxy — actual session check is done in layout/page
-  return;
+  const sessionToken = request.cookies.get("next-auth.session-token")?.value;
+  if (!sessionToken) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return Response.redirect(loginUrl);
+  }
 }

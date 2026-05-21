@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
+import { eq, sql } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, FolderKanban } from "lucide-react";
@@ -18,11 +19,8 @@ export default async function ProjectsPage() {
   const allProjects = await db
     .select()
     .from(projects)
+    .where(isAdmin ? sql`TRUE` : eq(projects.ownerId, userId))
     .orderBy(projects.createdAt);
-
-  const visibleProjects = isAdmin
-    ? allProjects
-    : allProjects.filter((p) => p.ownerId === userId);
 
   return (
     <div className="space-y-8">
@@ -42,7 +40,7 @@ export default async function ProjectsPage() {
         </Link>
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {visibleProjects.map((project) => (
+        {allProjects.map((project) => (
           <Link key={project.id} href={`/projects/${project.id}`}>
             <div className="group rounded-xl border bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
               <div className="flex items-center gap-3">
@@ -73,7 +71,7 @@ export default async function ProjectsPage() {
             </div>
           </Link>
         ))}
-        {visibleProjects.length === 0 && (
+        {allProjects.length === 0 && (
           <div className="col-span-full py-16 text-center text-sm text-[#1d1d1d]/40">
             No projects yet. Create your first project.
           </div>

@@ -22,6 +22,20 @@
       "when": 1779340331215,
       "tag": "0002_early_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779345288506,
+      "tag": "0003_right_ronan",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779345732074,
+      "tag": "0004_shiny_dreaming_celestial",
+      "breakpoints": true
     }
   ]
 }

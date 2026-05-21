@@ -1,8 +1,5 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { tasks } from "@/lib/db/schema";
-import { eq, sql } from "drizzle-orm";
 import { getAllProjects, getAllUsers } from "@/lib/data";
 import { AgGridTasks } from "./ag-grid-tasks";
 import { TaskCreatePanel } from "./task-create-panel";
@@ -11,35 +8,8 @@ export default async function TasksPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const isAdmin =
-    session.user.role === "super_admin" || session.user.role === "admin";
-
-  const whereClause = isAdmin
-    ? sql`TRUE`
-    : eq(tasks.assigneeId, session.user.id);
-
-  const allTasks = await db
-    .select()
-    .from(tasks)
-    .where(whereClause)
-    .orderBy(tasks.createdAt);
-
   const allProjects = await getAllProjects();
-  const projectMap = new Map(allProjects.map((p) => [p.id, p.name]));
-
   const allUsers = await getAllUsers();
-  const userMap = new Map(allUsers.map((u) => [u.id, u.name]));
-
-  const taskRows = allTasks.map((t) => ({
-    id: t.id,
-    title: t.title,
-    status: t.status,
-    priority: t.priority,
-    projectName: t.projectId ? projectMap.get(t.projectId) || "" : "",
-    assigneeName: t.assigneeId ? userMap.get(t.assigneeId) || "" : "",
-    dueDate: t.dueDate ? t.dueDate.toISOString() : null,
-    createdAt: t.createdAt.toISOString(),
-  }));
 
   return (
     <div className="space-y-6">
@@ -54,7 +24,7 @@ export default async function TasksPage() {
         </div>
         <TaskCreatePanel projects={allProjects} users={allUsers} />
       </div>
-      <AgGridTasks tasks={taskRows} />
+      <AgGridTasks />
     </div>
   );
 }

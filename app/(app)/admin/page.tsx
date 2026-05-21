@@ -15,7 +15,14 @@ export default async function AdminPage() {
   }
 
   const isSuperAdmin = session.user.role === "super_admin";
-  const allUsers = await db.select().from(users);
+  const allUsers = await db.select({
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    role: users.role,
+    avatar: users.avatar,
+    createdAt: users.createdAt,
+  }).from(users);
 
   return (
     <div className="space-y-8">

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, index } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -25,7 +25,9 @@ export const projects = pgTable("projects", {
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_projects_owner").on(table.ownerId),
+]);
 
 export const projectMembers = pgTable("project_members", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -39,7 +41,10 @@ export const projectMembers = pgTable("project_members", {
     .notNull()
     .default("member"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_pm_project").on(table.projectId),
+  index("idx_pm_user").on(table.userId),
+]);
 
 export const tasks = pgTable("tasks", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -62,7 +67,13 @@ export const tasks = pgTable("tasks", {
   dueDate: timestamp("due_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_tasks_assignee").on(table.assigneeId),
+  index("idx_tasks_project").on(table.projectId),
+  index("idx_tasks_status").on(table.status),
+  index("idx_tasks_created").on(table.createdAt),
+  index("idx_tasks_creator").on(table.creatorId),
+]);
 
 export const comments = pgTable("comments", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -74,7 +85,10 @@ export const comments = pgTable("comments", {
     .references(() => users.id)
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_comments_task").on(table.taskId),
+  index("idx_comments_author").on(table.authorId),
+]);
 
 export const activityLogs = pgTable("activity_logs", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -84,6 +98,10 @@ export const activityLogs = pgTable("activity_logs", {
   action: text("action").notNull(),
   entityType: text("entity_type").notNull(),
   entityId: text("entity_id").notNull(),
-  metadata: text("metadata"),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_al_entity").on(table.entityId),
+  index("idx_al_user").on(table.userId),
+  index("idx_al_entity_created").on(table.entityId, table.createdAt),
+]);
