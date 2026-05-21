@@ -81,11 +81,9 @@ export async function deleteProject(id: string) {
   }
   await checkRateLimit("deleteProject");
 
-  await db.transaction(async (tx) => {
-    await tx.delete(tasks).where(eq(tasks.projectId, id));
-    await tx.delete(projectMembers).where(eq(projectMembers.projectId, id));
-    await tx.delete(projects).where(eq(projects.id, id));
-  });
+  await db.delete(tasks).where(eq(tasks.projectId, id));
+  await db.delete(projectMembers).where(eq(projectMembers.projectId, id));
+  await db.delete(projects).where(eq(projects.id, id));
 
   revalidatePath("/projects");
 }

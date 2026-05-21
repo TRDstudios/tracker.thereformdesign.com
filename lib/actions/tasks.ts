@@ -134,16 +134,14 @@ export async function deleteTask(id: string) {
   if (!session?.user) throw new Error("Unauthorized");
   await checkRateLimit("deleteTask");
 
-  await db.transaction(async (tx) => {
-    await tx.delete(comments).where(eq(comments.taskId, id));
-    await tx.delete(tasks).where(eq(tasks.id, id));
+  await db.delete(comments).where(eq(comments.taskId, id));
+  await db.delete(tasks).where(eq(tasks.id, id));
 
-    await tx.insert(activityLogs).values({
-      userId: session.user.id,
-      action: "deleted_task",
-      entityType: "task",
-      entityId: id,
-    });
+  await db.insert(activityLogs).values({
+    userId: session.user.id,
+    action: "deleted_task",
+    entityType: "task",
+    entityId: id,
   });
 
   revalidatePath("/tasks");

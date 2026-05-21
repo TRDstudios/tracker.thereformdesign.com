@@ -6,7 +6,7 @@ import { hash } from "bcryptjs";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { users, tasks, comments, activityLogs, projectMembers } from "@/lib/db/schema";
+import { users, tasks, comments, activityLogs, projectMembers, projects } from "@/lib/db/schema";
 import { createUserSchema } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -98,13 +98,16 @@ export async function deleteUser(userId: string) {
   }
   await checkRateLimit("deleteUser");
 
-  await db.transaction(async (tx) => {
-    await tx.delete(activityLogs).where(eq(activityLogs.userId, userId));
-    await tx.delete(comments).where(eq(comments.authorId, userId));
-    await tx.delete(projectMembers).where(eq(projectMembers.userId, userId));
-    await tx.update(tasks).set({ assigneeId: null }).where(eq(tasks.assigneeId, userId));
-    await tx.delete(users).where(eq(users.id, userId));
-  });
+  const actingUserId = session.user.id;
+
+  // neon-http driver doesn't support db.transaction(), run sequentially
+  await db.update(projects).set({ ownerId: actingUserId }).where(eq(projects.ownerId, userId));
+  await db.update(tasks).set({ creatorId: actingUserId }).where(eq(tasks.creatorId, userId));
+  await db.update(tasks).set({ assigneeId: null }).where(eq(tasks.assigneeId, userId));
+  await db.delete(activityLogs).where(eq(activityLogs.userId, userId));
+  await db.delete(comments).where(eq(comments.authorId, userId));
+  await db.delete(projectMembers).where(eq(projectMembers.userId, userId));
+  await db.delete(users).where(eq(users.id, userId));
 
   revalidatePath("/admin");
 }
