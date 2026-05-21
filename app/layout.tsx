@@ -9,8 +9,9 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Tracker",
+  title: "Project Tracker - TRD",
   description: "Project & Task Tracker",
+  icons: { icon: "/fav-icon.png" },
 };
 
 export default function RootLayout({
