@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SlidePanel } from "@/components/ui/slide-panel";
 import { updateProject } from "@/lib/actions/projects";
-import { X, Plus } from "lucide-react";
+import { X, Plus, LoaderCircle } from "lucide-react";
 
 const STACK_OPTIONS = [
   "HTML static Version",
@@ -307,7 +307,7 @@ export function ProjectEditPanel({
             disabled={pending}
             className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
           >
-            {pending ? "Saving..." : "Save"}
+            {pending ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Saving...</> : "Save"}
           </Button>
           <Button
             type="button"

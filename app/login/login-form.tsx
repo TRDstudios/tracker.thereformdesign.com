@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { validateLogin } from "@/lib/actions/auth";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +85,7 @@ export function LoginForm() {
         className="w-full h-10 rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 transition-all"
         disabled={pending}
       >
-        {pending ? "Signing in..." : "Sign in"}
+        {pending ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Signing in...</> : "Sign in"}
       </Button>
 
     </form>

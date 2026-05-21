@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createTask } from "@/lib/actions/tasks";
+import { LoaderCircle } from "lucide-react";
 
 interface ProjectOption {
   id: string;
@@ -149,7 +150,7 @@ export function TaskForm({
           disabled={pending}
           className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
         >
-          {pending ? "Creating..." : "Create Task"}
+          {pending ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Creating...</> : "Create Task"}
         </Button>
         <Button
           type="button"

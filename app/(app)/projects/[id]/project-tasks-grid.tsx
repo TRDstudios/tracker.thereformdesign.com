@@ -15,6 +15,7 @@ import { Eye, Pencil, Trash2, ListTodo } from "lucide-react";
 import { deleteTask } from "@/lib/actions/tasks";
 import { toast } from "sonner";
 import { TaskEditPanel } from "@/app/(app)/tasks/task-edit-panel";
+import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
   InfiniteRowModelModule,
@@ -246,7 +247,7 @@ export function ProjectTasksGrid({
           floatingFiltersHeight={36}
           cacheBlockSize={50}
           maxBlocksInCache={5}
-          suppressLoadingOverlay={true}
+          loadingOverlayComponent={GridLoadingOverlay}
           suppressNoRowsOverlay={true}
           suppressPaginationPanel={true}
         />

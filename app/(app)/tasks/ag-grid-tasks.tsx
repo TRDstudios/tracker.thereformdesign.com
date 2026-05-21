@@ -26,6 +26,7 @@ import {
 import { StatusDropdown } from "./ag-grid-status-dropdown";
 import { TaskEditPanel } from "./task-edit-panel";
 import { toast } from "sonner";
+import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
   InfiniteRowModelModule,
@@ -233,7 +234,7 @@ export function AgGridTasks({
           floatingFiltersHeight={36}
           cacheBlockSize={50}
           maxBlocksInCache={5}
-          suppressLoadingOverlay={true}
+          loadingOverlayComponent={GridLoadingOverlay}
           suppressNoRowsOverlay={true}
           suppressPaginationPanel={true}
         />

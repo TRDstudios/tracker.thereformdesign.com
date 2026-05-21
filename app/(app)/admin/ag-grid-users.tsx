@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { deleteUser, deactivateUser, activateUser } from "@/lib/actions/admin";
 import { toast } from "sonner";
+import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
   InfiniteRowModelModule,
@@ -341,7 +342,7 @@ export function AgGridUsers({
           floatingFiltersHeight={36}
           cacheBlockSize={100}
           maxBlocksInCache={5}
-          suppressLoadingOverlay={true}
+          loadingOverlayComponent={GridLoadingOverlay}
           suppressNoRowsOverlay={true}
           suppressPaginationPanel={true}
         />

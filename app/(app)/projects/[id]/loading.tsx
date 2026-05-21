@@ -1,38 +1,25 @@
 export default function Loading() {
   return (
-    <div className="space-y-8 animate-pulse">
+    <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
-          <div className="h-12 w-12 shrink-0 rounded-xl bg-zinc-200" />
+          <div className="h-12 w-12 shrink-0 animate-pulse rounded-xl bg-[#f0f0f0]" />
           <div className="space-y-2">
-            <div className="h-8 w-64 rounded bg-zinc-200" />
-            <div className="h-4 w-96 rounded bg-zinc-100" />
+            <div className="h-7 w-64 animate-pulse rounded bg-[#e5e5e5]" />
+            <div className="h-4 w-96 animate-pulse rounded bg-[#f0f0f0]" />
           </div>
         </div>
-      </div>
-      <div className="rounded-xl border bg-white p-5">
-        <div className="h-5 w-32 rounded bg-zinc-200" />
-        <div className="mt-4 flex gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-8 w-20 rounded bg-zinc-100" />
-          ))}
+        <div className="flex gap-2">
+          <div className="h-9 w-20 animate-pulse rounded-lg bg-[#f0f0f0]" />
+          <div className="h-9 w-24 animate-pulse rounded-lg bg-[#f0f0f0]" />
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map((col) => (
-          <div key={col} className="space-y-3">
-            <div className="h-10 rounded-lg bg-white border" />
-            <div className="space-y-2">
-              {[1, 2].map((card) => (
-                <div key={card} className="h-20 rounded-lg border bg-white p-3">
-                  <div className="h-4 w-3/4 rounded bg-zinc-200" />
-                  <div className="mt-2 h-3 w-1/4 rounded bg-zinc-100" />
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="grid grid-cols-3 gap-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-24 animate-pulse rounded-xl border border-[#e5e5e5] bg-white p-5" />
         ))}
       </div>
+      <div className="h-[500px] animate-pulse rounded-xl border border-[#e5e5e5] bg-white" />
     </div>
   );
 }

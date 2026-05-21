@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { addComment } from "@/lib/actions/tasks";
+import { LoaderCircle } from "lucide-react";
 
 export function CommentForm({ taskId }: { taskId: string }) {
   const [, formAction, pending] = useActionState(
@@ -29,7 +30,7 @@ export function CommentForm({ taskId }: { taskId: string }) {
         disabled={pending}
         className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
       >
-        {pending ? "Posting..." : "Comment"}
+        {pending ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Posting...</> : "Comment"}
       </Button>
     </form>
   );

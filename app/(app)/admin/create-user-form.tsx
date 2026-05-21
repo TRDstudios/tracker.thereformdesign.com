@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createUser } from "@/lib/actions/admin";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 
 export function CreateUserForm({ userRole, onSuccess }: { userRole: string; onSuccess?: () => void }) {
   const isSuperAdmin = userRole === "super_admin";
@@ -134,7 +134,7 @@ export function CreateUserForm({ userRole, onSuccess }: { userRole: string; onSu
               disabled={pending}
               className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
             >
-              {pending ? "Creating..." : "Create User"}
+              {pending ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Creating...</> : "Create User"}
             </Button>
           </div>
         </form>

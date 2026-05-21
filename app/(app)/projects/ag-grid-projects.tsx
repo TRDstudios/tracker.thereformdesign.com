@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { deleteProject } from "@/lib/actions/projects";
 import { toast } from "sonner";
 import { ProjectEditPanel } from "./project-edit-panel";
+import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
   InfiniteRowModelModule,
@@ -233,7 +234,7 @@ export function AgGridProjects({
         floatingFiltersHeight={36}
         cacheBlockSize={50}
         maxBlocksInCache={5}
-        suppressLoadingOverlay={true}
+        loadingOverlayComponent={GridLoadingOverlay}
         suppressNoRowsOverlay={true}
         suppressPaginationPanel={true}
       />
