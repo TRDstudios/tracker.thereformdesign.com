@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -49,17 +50,14 @@ export function Sidebar({ userRole }: SidebarProps) {
 
       <aside
         className={`
-          fixed inset-y-0 left-0 z-40 flex w-56 flex-col border-r bg-sidebar transition-transform duration-200
+          fixed inset-y-0 left-0 z-40 flex w-56 flex-col border-r border-[#1d1d1d] bg-[#1d1d1d] transition-transform duration-200
           md:static md:translate-x-0
           ${open ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        <div className="flex h-14 items-center border-b border-sidebar-border px-5">
-          <Link
-            href="/dashboard"
-            className="text-sm font-semibold tracking-tight text-[#1d1d1d]"
-          >
-            Tracker
+        <div className="flex h-14 items-center border-b border-white/10 px-5">
+          <Link href="/dashboard" className="flex items-center">
+            <Image src="/logo.png" alt="Tracker" width={140} height={40} className="h-10 w-auto" priority />
           </Link>
         </div>
         <nav className="flex-1 space-y-0.5 p-3">
@@ -72,7 +70,7 @@ export function Sidebar({ userRole }: SidebarProps) {
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
                   isActive
                     ? "bg-[#f5eb10] text-[#1d1d1d]"
-                    : "text-[#1d1d1d]/60 hover:bg-[#f5eb10]/20 hover:text-[#1d1d1d]"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
                 }`}
                 onClick={() => setOpen(false)}
               >
@@ -87,7 +85,7 @@ export function Sidebar({ userRole }: SidebarProps) {
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
                 pathname === "/admin"
                   ? "bg-[#f5eb10] text-[#1d1d1d]"
-                  : "text-[#1d1d1d]/60 hover:bg-[#f5eb10]/20 hover:text-[#1d1d1d]"
+                  : "text-white/60 hover:bg-white/10 hover:text-white"
               }`}
               onClick={() => setOpen(false)}
             >

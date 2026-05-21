@@ -15,6 +15,13 @@
       "when": 1779208351747,
       "tag": "0001_goofy_chimera",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779340331215,
+      "tag": "0002_early_major_mapleleaf",
+      "breakpoints": true
     }
   ]
 }

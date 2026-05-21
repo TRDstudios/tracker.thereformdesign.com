@@ -22,23 +22,31 @@ interface UserOption {
 export function TaskForm({
   projects = [],
   users = [],
+  defaultProjectId: externalProjectId,
+  onSuccess,
 }: {
   projects?: ProjectOption[];
   users?: UserOption[];
+  defaultProjectId?: string;
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const defaultProjectId = searchParams.get("projectId") || "";
+  const defaultProjectId = externalProjectId || searchParams.get("projectId") || "";
 
   const [, formAction, pending] = useActionState(
     async (_prev: unknown, formData: FormData) => {
       const result = await createTask(formData);
       if (result?.id) {
-        const pid = formData.get("projectId") as string;
-        if (pid) {
-          router.push(`/projects/${pid}`);
+        if (onSuccess) {
+          onSuccess();
         } else {
-          router.push(`/tasks/${result.id}`);
+          const pid = formData.get("projectId") as string;
+          if (pid) {
+            router.push(`/projects/${pid}`);
+          } else {
+            router.push(`/tasks/${result.id}`);
+          }
         }
       }
     },
@@ -146,7 +154,7 @@ export function TaskForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.back()}
+          onClick={() => (onSuccess ? onSuccess() : router.back())}
           className="rounded-lg border-[#e5e5e5] text-[#1d1d1d]/60"
         >
           Cancel

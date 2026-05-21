@@ -46,10 +46,10 @@ export const tasks = pgTable("tasks", {
   title: text("title").notNull(),
   description: text("description"),
   status: text("status", {
-    enum: ["backlog", "todo", "in_progress", "review", "done"],
+    enum: ["todo", "in_progress", "review", "done"],
   })
     .notNull()
-    .default("backlog"),
+    .default("todo"),
   priority: text("priority", { enum: ["low", "medium", "high"] })
     .notNull()
     .default("medium"),

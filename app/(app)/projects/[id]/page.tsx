@@ -3,23 +3,22 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { projects, tasks, projectMembers, users } from "@/lib/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Users, FolderKanban } from "lucide-react";
 import { DeleteProjectButton } from "./delete-project-button";
 import { ProjectMembers } from "./project-members";
+import { TaskCreatePanel } from "@/app/(app)/tasks/task-create-panel";
 
 const statusLabels: Record<string, string> = {
-  backlog: "Backlog",
-  todo: "Todo",
+  todo: "To Do",
   in_progress: "In Progress",
   review: "Review",
   done: "Done",
 };
 
 const statusColors: Record<string, string> = {
-  backlog: "bg-zinc-100 text-zinc-700",
   todo: "bg-blue-100 text-blue-700",
   in_progress: "bg-amber-100 text-amber-700",
   review: "bg-purple-100 text-purple-700",
@@ -72,6 +71,12 @@ export default async function ProjectDetailPage(props: {
     .from(users)
     .orderBy(users.name);
 
+  const allProjects = await db
+    .select({ id: projects.id, name: projects.name })
+    .from(projects)
+    .where(sql`TRUE`)
+    .orderBy(projects.createdAt);
+
   return (
     <div className="space-y-8">
       <div className="flex items-start justify-between">
@@ -109,14 +114,18 @@ export default async function ProjectDetailPage(props: {
           {session.user.role !== "user" && (
             <DeleteProjectButton projectId={project.id} />
           )}
-          <Link href={`/tasks/new?projectId=${project.id}`}>
+          <TaskCreatePanel
+            projects={allProjects}
+            users={allUsers}
+            defaultProjectId={id}
+          >
             <Button
               size="sm"
               className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
             >
               <Plus className="mr-1 h-4 w-4" /> New Task
             </Button>
-          </Link>
+          </TaskCreatePanel>
         </div>
       </div>
 
@@ -133,8 +142,8 @@ export default async function ProjectDetailPage(props: {
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-4">
-        {(["backlog", "todo", "in_progress", "review", "done"] as const).map(
+      <div className="grid grid-cols-4 gap-4">
+        {(["todo", "in_progress", "review", "done"] as const).map(
           (status) => {
             const columnTasks = projectTasks.filter(
               (t) => t.status === status,

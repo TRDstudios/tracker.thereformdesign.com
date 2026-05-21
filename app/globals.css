@@ -1,6 +1,100 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "ag-grid-community/styles/ag-theme-alpine.css";
+
+.ag-theme-custom {
+  --ag-foreground-color: #1d1d1d;
+  --ag-data-color: #1d1d1d;
+  --ag-secondary-foreground-color: #a1a1a1;
+  --ag-header-foreground-color: #1d1d1d;
+  --ag-header-background-color: #fafaf9;
+  --ag-background-color: #ffffff;
+  --ag-odd-row-background-color: #ffffff;
+  --ag-row-hover-color: #f5f5f4;
+  --ag-selected-row-background-color: #f5eb10/10;
+  --ag-border-color: #e5e5e5;
+  --ag-header-column-separator: true;
+  --ag-header-column-separator-color: #e5e5e5;
+  --ag-header-column-separator-height: 50%;
+  --ag-input-focus-border-color: #f5eb10;
+  --ag-range-selection-border-color: #f5eb10;
+  --ag-checkbox-checked-color: #f5eb10;
+  --ag-checkbox-background-color: #ffffff;
+  --ag-checkbox-border-color: #e5e5e5;
+  --ag-font-family: "Manrope", sans-serif;
+  --ag-font-size: 13px;
+  --ag-border-radius: 8px;
+  --ag-wrapper-border-radius: 8px;
+  --ag-header-column-resize-handle-color: #e5e5e5;
+  --ag-input-border-color: #e5e5e5;
+  font-family: "Manrope", sans-serif;
+}
+
+.ag-theme-custom .ag-header {
+  background: #f5f5f4;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.ag-theme-custom .ag-header-cell {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #1d1d1d;
+}
+
+.ag-theme-custom .ag-floating-filter-input {
+  font-size: 12px;
+}
+
+.ag-theme-custom .ag-cell {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.ag-theme-custom .ag-row {
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f4;
+}
+
+.ag-theme-custom .ag-row:last-child {
+  border-bottom: none;
+}
+
+.ag-theme-custom .ag-row:hover {
+  background-color: #f5f5f4;
+}
+
+.ag-theme-custom .ag-row-selected {
+  background-color: rgba(245, 235, 16, 0.08) !important;
+}
+
+.ag-theme-custom .ag-paging-panel {
+  border-top: 1px solid #e5e5e5;
+  font-size: 12px;
+  color: #a1a1a1;
+  padding: 8px 12px;
+}
+
+.ag-theme-custom .ag-paging-button {
+  color: #1d1d1d;
+}
+
+.ag-theme-custom .ag-paging-button.ag-disabled {
+  color: #e5e5e5;
+}
+
+.ag-theme-custom .ag-filter-toolpanel-header,
+.ag-theme-custom .ag-filter-toolpanel-search {
+  font-family: "Manrope", sans-serif;
+}
+
+.ag-theme-custom .ag-menu {
+  border-radius: 8px;
+  border-color: #e5e5e5;
+}
 
 @custom-variant dark (&:is(.dark *));
 

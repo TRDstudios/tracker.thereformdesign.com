@@ -18,8 +18,7 @@ import { CommentForm } from "./comment-form";
 import { DeleteTaskButton } from "./delete-task-button";
 
 const statusLabels: Record<string, string> = {
-  backlog: "Backlog",
-  todo: "Todo",
+  todo: "To Do",
   in_progress: "In Progress",
   review: "Review",
   done: "Done",

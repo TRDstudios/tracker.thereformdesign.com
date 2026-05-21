@@ -50,7 +50,7 @@ export async function updateTaskStatus(id: string, status: string) {
   await db
     .update(tasks)
     .set({
-      status: status as "backlog" | "todo" | "in_progress" | "review" | "done",
+      status: status as "todo" | "in_progress" | "review" | "done",
       updatedAt: new Date(),
     })
     .where(eq(tasks.id, id));

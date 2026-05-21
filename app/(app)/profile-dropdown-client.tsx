@@ -12,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { logout } from "@/lib/actions/auth";
 
 export function ProfileDropdownClient({
   name,
@@ -26,7 +25,8 @@ export function ProfileDropdownClient({
   const router = useRouter();
 
   const handleLogout = async () => {
-    await logout();
+    await fetch("/api/auth/signout", { method: "POST" });
+    router.push("/login");
   };
 
   return (
