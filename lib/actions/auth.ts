@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { signIn, signOut } from "@/lib/auth";
+import { signOut } from "@/lib/auth";
 import { registerSchema, loginSchema } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -32,10 +32,10 @@ export async function register(formData: FormData) {
     passwordHash,
   });
 
-  await signIn("credentials", { email: parsed.email, password: parsed.password, redirectTo: "/dashboard" });
+  return { success: true, email: parsed.email, password: parsed.password };
 }
 
-export async function login(formData: FormData) {
+export async function validateLogin(formData: FormData) {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
 
   const rl = rateLimit(`login:${ip}`, 20, 60_000);
@@ -43,9 +43,27 @@ export async function login(formData: FormData) {
     return { error: "Too many login attempts. Please try again later." };
   }
 
-  const parsed = loginSchema.parse(Object.fromEntries(formData));
+  let email: string, password: string;
+  try {
+    const parsed = loginSchema.parse(Object.fromEntries(formData));
+    email = parsed.email;
+    password = parsed.password;
+  } catch {
+    return { error: "Invalid email or password format" };
+  }
 
-  await signIn("credentials", { email: parsed.email, password: parsed.password, redirectTo: "/dashboard" });
+  const [user] = await db.select().from(users).where(eq(users.email, email));
+  if (!user) {
+    return { error: "Invalid email or password" };
+  }
+
+  const { compare } = await import("bcryptjs");
+  const valid = await compare(password, user.passwordHash);
+  if (!valid) {
+    return { error: "Invalid email or password" };
+  }
+
+  return { success: true, email, password };
 }
 
 export async function logout() {

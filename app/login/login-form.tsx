@@ -1,28 +1,42 @@
 "use client";
 
-import { useActionState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { login } from "@/lib/actions/auth";
+import { validateLogin } from "@/lib/actions/auth";
 
 export function LoginForm() {
-  const router = useRouter();
-  const [state, formAction, pending] = useActionState(
-    async (_prev: unknown, formData: FormData) => {
-      try {
-        await login(formData);
-        router.push("/dashboard");
-      } catch {
-        return { error: "Invalid email or password" };
-      }
-    },
-    null,
-  );
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+
+    const result = await validateLogin(formData);
+    if (result?.error) {
+      setError(result.error);
+      setPending(false);
+      return;
+    }
+
+    if (result?.success) {
+      await signIn("credentials", {
+        email: result.email,
+        password: result.password,
+        redirect: true,
+        callbackUrl: "/dashboard",
+      });
+    }
+  }
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-medium text-[#1d1d1d]">
           Email
@@ -51,8 +65,8 @@ export function LoginForm() {
           className="h-10 rounded-lg border-[#e5e5e5] bg-white text-[#1d1d1d] placeholder:text-[#a1a1a1] focus:border-[#f5eb10] focus:ring-[#f5eb10]"
         />
       </div>
-      {state?.error && (
-        <p className="text-sm text-red-500">{state.error}</p>
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
       )}
       <Button
         type="submit"

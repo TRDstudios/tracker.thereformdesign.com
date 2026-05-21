@@ -15,18 +15,15 @@ export function proxy(request: NextRequest) {
 
   if (
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/file") ||
-    pathname.startsWith("/globe") ||
-    pathname.startsWith("/next") ||
-    pathname.startsWith("/vercel") ||
-    pathname.startsWith("/window")
+    pathname.startsWith("/favicon")
   ) {
     return;
   }
 
-  const sessionToken = request.cookies.get("next-auth.session-token")?.value;
-  if (!sessionToken) {
+  const tokenCookie =
+    request.cookies.get("authjs.session-token") ||
+    request.cookies.get("__Secure-authjs.session-token");
+  if (!tokenCookie) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return Response.redirect(loginUrl);
