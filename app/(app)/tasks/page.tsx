@@ -24,7 +24,7 @@ export default async function TasksPage() {
         </div>
         <TaskCreatePanel projects={allProjects} users={allUsers} />
       </div>
-      <AgGridTasks />
+      <AgGridTasks userRole={session.user.role} projects={allProjects} users={allUsers} />
     </div>
   );
 }

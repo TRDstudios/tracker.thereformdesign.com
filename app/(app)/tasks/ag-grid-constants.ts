@@ -31,6 +31,21 @@ export interface TaskRow {
   createdAt: string;
 }
 
+export interface TaskRowData {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  projectId: string | null;
+  assigneeId: string | null;
+  projectName: string;
+  assigneeName: string;
+  dueDate: string | null;
+  createdAt: string;
+}
+
 export interface GridContext {
   setStatusTarget: (target: { rowId: string; current: string; rect: DOMRect } | null) => void;
+  onEdit: (task: TaskRowData) => void;
 }

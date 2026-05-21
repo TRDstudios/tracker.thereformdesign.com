@@ -6,6 +6,7 @@ import { statusLabels, statusStyles, priorityStyles, type GridContext } from "./
 
 export function StatusCellRenderer(params: ICellRendererParams) {
   const value = params.value as string;
+  if (!value) return null;
   const ctx = params.context as GridContext;
 
   return (
@@ -32,6 +33,7 @@ export function StatusCellRenderer(params: ICellRendererParams) {
 
 export function PriorityCellRenderer(params: ICellRendererParams) {
   const value = params.value as string;
+  if (!value) return null;
   return (
     <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold ${priorityStyles[value] || ""}`}>
       {value}

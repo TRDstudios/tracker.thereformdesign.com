@@ -74,8 +74,11 @@ export async function GET(request: NextRequest) {
     .select({
       id: tasks.id,
       title: tasks.title,
+      description: tasks.description,
       status: tasks.status,
       priority: tasks.priority,
+      projectId: tasks.projectId,
+      assigneeId: tasks.assigneeId,
       projectName: projects.name,
       assigneeName: users.name,
       dueDate: tasks.dueDate,

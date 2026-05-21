@@ -245,13 +245,13 @@ export function AgGridUsers({
       filter: "agTextColumnFilter",
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
-        const isActive = params.value as boolean;
+        if (params.value == null) return null;
         return (
           <Badge
-            variant={isActive ? "default" : "destructive"}
+            variant={params.value ? "default" : "destructive"}
             className="rounded-md text-[10px] font-medium"
           >
-            {isActive ? "Active" : "Inactive"}
+            {params.value ? "Active" : "Inactive"}
           </Badge>
         );
       },
@@ -264,6 +264,7 @@ export function AgGridUsers({
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         const value = params.value as string;
+        if (!value) return null;
         return (
           <Badge
             variant={
@@ -334,15 +335,15 @@ export function AgGridUsers({
           defaultColDef={defaultColDef}
           rowModelType="infinite"
           datasource={dataSource}
-          pagination={true}
-          paginationPageSize={20}
-          paginationPageSizeSelector={[10, 20, 50, 100]}
           animateRows={true}
           rowHeight={56}
           headerHeight={44}
           floatingFiltersHeight={36}
-          cacheBlockSize={50}
+          cacheBlockSize={100}
           maxBlocksInCache={5}
+          suppressLoadingOverlay={true}
+          suppressNoRowsOverlay={true}
+          suppressPaginationPanel={true}
         />
       </div>
     </>

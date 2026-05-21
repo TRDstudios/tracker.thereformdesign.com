@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
@@ -10,13 +10,13 @@ import {
   TextFilterModule,
   NumberFilterModule,
   DateFilterModule,
-  PaginationModule,
   RowSelectionModule,
   ColumnAutoSizeModule,
   ValidationModule,
 } from "ag-grid-community";
-import { updateTaskStatus } from "@/lib/actions/tasks";
-import type { GridContext } from "./ag-grid-constants";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { updateTaskStatus, deleteTask } from "@/lib/actions/tasks";
+import type { GridContext, TaskRowData } from "./ag-grid-constants";
 import {
   StatusCellRenderer,
   PriorityCellRenderer,
@@ -24,27 +24,50 @@ import {
   DateCellRenderer,
 } from "./ag-grid-cell-renderers";
 import { StatusDropdown } from "./ag-grid-status-dropdown";
+import { TaskEditPanel } from "./task-edit-panel";
+import { toast } from "sonner";
 
 ModuleRegistry.registerModules([
   InfiniteRowModelModule,
   TextFilterModule,
   NumberFilterModule,
   DateFilterModule,
-  PaginationModule,
   RowSelectionModule,
   ColumnAutoSizeModule,
   ValidationModule,
 ]);
 
-export function AgGridTasks() {
+export function AgGridTasks({
+  userRole,
+  projects,
+  users,
+}: {
+  userRole?: string;
+  projects?: { id: string; name: string }[];
+  users?: { id: string; name: string; email: string }[];
+}) {
   const router = useRouter();
+  const gridRef = useRef<AgGridReact>(null);
+  const isAdmin = userRole === "super_admin" || userRole === "admin";
   const [statusTarget, setStatusTarget] = useState<{
     rowId: string;
     current: string;
     rect: DOMRect;
   } | null>(null);
+  const [editingTask, setEditingTask] = useState<TaskRowData | null>(null);
 
-  const ctx: GridContext = useMemo(() => ({ setStatusTarget }), []);
+  const ctx: GridContext = useMemo(() => ({ setStatusTarget, onEdit: setEditingTask }), []);
+
+  const handleDelete = useCallback(async (taskId: string) => {
+    if (!confirm("Delete this task?")) return;
+    try {
+      await deleteTask(taskId);
+      toast.success("Task deleted");
+      gridRef.current?.api?.refreshInfiniteCache();
+    } catch {
+      toast.error("Failed to delete task");
+    }
+  }, []);
 
   const colDefs = useMemo<ColDef[]>(() => [
     {
@@ -64,7 +87,7 @@ export function AgGridTasks() {
       filter: "agTextColumnFilter",
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => (
-        <span className="font-medium text-[#1d1d1d]">{params.value}</span>
+        <span className="font-medium text-[#1d1d1d]">{params.value || ""}</span>
       ),
     },
     {
@@ -89,6 +112,9 @@ export function AgGridTasks() {
       width: 150,
       filter: "agTextColumnFilter",
       floatingFilter: true,
+      cellRenderer: (params: ICellRendererParams) => (
+        <span className="text-[#1d1d1d]/70">{params.value || "—"}</span>
+      ),
     },
     {
       field: "dueDate",
@@ -106,7 +132,52 @@ export function AgGridTasks() {
       floatingFilter: true,
       cellRenderer: DateCellRenderer,
     },
-  ], []);
+    {
+      colId: "actions",
+      headerName: "Actions",
+      width: 120,
+      sortable: false,
+      filter: false,
+      cellRenderer: (params: ICellRendererParams) => {
+        if (!params.data) return null;
+        return (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={(e) => { e.stopPropagation(); router.push(`/tasks/${params.data.id}`); }}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[#a1a1a1] transition-colors hover:bg-[#f5f5f4] hover:text-[#1d1d1d]"
+              title="View"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); if (isAdmin) { const ctx = params.context as GridContext; ctx.onEdit(params.data); } }}
+              className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors ${
+                isAdmin
+                  ? "text-[#a1a1a1] hover:bg-[#f5f5f4] hover:text-[#1d1d1d]"
+                  : "text-[#e5e5e5] cursor-not-allowed"
+              }`}
+              title="Edit"
+              disabled={!isAdmin}
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); if (isAdmin) handleDelete(params.data.id); }}
+              className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors ${
+                isAdmin
+                  ? "text-[#a1a1a1] hover:bg-red-50 hover:text-red-500"
+                  : "text-[#e5e5e5] cursor-not-allowed"
+              }`}
+              title="Delete"
+              disabled={!isAdmin}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        );
+      },
+    },
+  ], [isAdmin, handleDelete]);
 
   const defaultColDef = useMemo(() => ({
     sortable: true,
@@ -114,11 +185,6 @@ export function AgGridTasks() {
     suppressHeaderMenuButton: false,
     suppressHeaderFilterButton: false,
   }), []);
-
-  const onCellClicked = useCallback((params: { column: { getColId: () => string }; data: { id: string } }) => {
-    if (params.column.getColId() === "status") return;
-    router.push(`/tasks/${params.data.id}`);
-  }, [router]);
 
   const handleStatusSelect = useCallback(async (value: string) => {
     if (!statusTarget || value === statusTarget.current) {
@@ -153,16 +219,13 @@ export function AgGridTasks() {
     <>
       <div className="ag-theme-custom h-[600px] w-full rounded-xl border shadow-sm">
         <AgGridReact
+          ref={gridRef}
           columnDefs={colDefs}
           defaultColDef={defaultColDef}
           context={ctx}
           rowModelType="infinite"
           datasource={dataSource}
-          pagination={true}
-          paginationPageSize={20}
-          paginationPageSizeSelector={[10, 20, 50, 100]}
           rowSelection="multiple"
-          onCellClicked={onCellClicked}
           animateRows={true}
           suppressRowClickSelection={true}
           rowHeight={44}
@@ -170,6 +233,9 @@ export function AgGridTasks() {
           floatingFiltersHeight={36}
           cacheBlockSize={50}
           maxBlocksInCache={5}
+          suppressLoadingOverlay={true}
+          suppressNoRowsOverlay={true}
+          suppressPaginationPanel={true}
         />
       </div>
       {statusTarget && (
@@ -180,6 +246,13 @@ export function AgGridTasks() {
           onClose={() => setStatusTarget(null)}
         />
       )}
+      <TaskEditPanel
+        open={!!editingTask}
+        onClose={() => { setEditingTask(null); gridRef.current?.api?.refreshInfiniteCache(); }}
+        task={editingTask}
+        projects={projects}
+        users={users}
+      />
     </>
   );
 }
