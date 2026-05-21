@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
@@ -16,16 +16,19 @@ export async function validateLogin(formData: FormData) {
     return { error: "Too many login attempts. Please try again later." };
   }
 
-  let email: string, password: string;
+  let identifier: string, password: string;
   try {
     const parsed = loginSchema.parse(Object.fromEntries(formData));
-    email = parsed.email;
+    identifier = parsed.email;
     password = parsed.password;
   } catch {
     return { error: "Invalid email or password format" };
   }
 
-  const [user] = await db.select().from(users).where(eq(users.email, email));
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(or(eq(users.email, identifier), eq(users.userId, identifier)));
   if (!user) {
     return { error: "Invalid email or password" };
   }
@@ -36,7 +39,7 @@ export async function validateLogin(formData: FormData) {
     return { error: "Invalid email or password" };
   }
 
-  return { success: true, email, password };
+  return { success: true, email: user.email, password };
 }
 
 export async function logout() {

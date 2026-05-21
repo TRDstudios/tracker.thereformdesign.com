@@ -35,9 +35,14 @@ export async function createUser(formData: FormData) {
     throw new Error("Only super admin can create super admin accounts");
   }
 
-  const existing = await db.select().from(users).where(eq(users.email, parsed.email));
-  if (existing.length > 0) {
+  const existingEmail = await db.select().from(users).where(eq(users.email, parsed.email));
+  if (existingEmail.length > 0) {
     return { error: "Email already in use" };
+  }
+
+  const existingUserId = await db.select().from(users).where(eq(users.userId, parsed.userId));
+  if (existingUserId.length > 0) {
+    return { error: "User ID already taken" };
   }
 
   const passwordHash = await hash(parsed.password, 12);
@@ -45,6 +50,8 @@ export async function createUser(formData: FormData) {
   await db.insert(users).values({
     name: parsed.name,
     email: parsed.email,
+    userId: parsed.userId,
+    profession: parsed.profession,
     passwordHash,
     role: parsed.role,
   });

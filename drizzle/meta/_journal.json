@@ -43,6 +43,13 @@
       "when": 1779352476996,
       "tag": "0005_dark_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779353526097,
+      "tag": "0006_thankful_tag",
+      "breakpoints": true
     }
   ]
 }

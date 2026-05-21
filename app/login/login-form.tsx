@@ -39,15 +39,15 @@ export function LoginForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-medium text-[#1d1d1d]">
-          Email
+          Email or User ID
         </Label>
         <Input
           id="email"
           name="email"
-          type="email"
+          type="text"
           required
           autoComplete="email"
-          placeholder="hello@example.com"
+          placeholder="hello@example.com or USER123"
           className="h-10 rounded-lg border-[#e5e5e5] bg-white text-[#1d1d1d] placeholder:text-[#a1a1a1] focus:border-[#f5eb10] focus:ring-[#f5eb10]"
         />
       </div>

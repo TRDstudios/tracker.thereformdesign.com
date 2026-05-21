@@ -14,7 +14,7 @@ export const projectRoleSchema = z.enum(["admin", "member"]);
 export const projectStatusSchema = z.enum(["active", "archived"]);
 
 export const loginSchema = z.object({
-  email: emailSchema,
+  email: z.string().min(1, "Email or User ID is required").max(255),
   password: passwordSchema,
 });
 
@@ -47,11 +47,16 @@ export const updateProjectSchema = z.object({
   status: projectStatusSchema,
 });
 
+export const userIdSchema = z.string().min(2, "User ID must be at least 2 characters").max(50);
+export const professionSchema = z.enum(["Manager", "Developer", "Testing", "Marketing"]);
+
 export const createUserSchema = z.object({
   name: nameSchema,
   email: emailSchema,
   password: passwordSchema,
   role: roleSchema.default("user"),
+  userId: userIdSchema,
+  profession: professionSchema,
 });
 
 export const addCommentSchema = z.object({

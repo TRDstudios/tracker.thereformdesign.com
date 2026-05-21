@@ -9,6 +9,10 @@ export const users = pgTable("users", {
     .notNull()
     .default("user"),
   avatar: text("avatar"),
+  userId: text("user_id").unique(),
+  profession: text("profession", {
+    enum: ["Manager", "Developer", "Testing", "Marketing"],
+  }),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
