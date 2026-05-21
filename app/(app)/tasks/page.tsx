@@ -1,8 +1,9 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { tasks, projects, users } from "@/lib/db/schema";
+import { tasks } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
+import { getAllProjects, getAllUsers } from "@/lib/data";
 import { AgGridTasks } from "./ag-grid-tasks";
 import { TaskCreatePanel } from "./task-create-panel";
 
@@ -23,18 +24,10 @@ export default async function TasksPage() {
     .where(whereClause)
     .orderBy(tasks.createdAt);
 
-  const allProjects = await db
-    .select({ id: projects.id, name: projects.name })
-    .from(projects)
-    .orderBy(projects.createdAt);
-
+  const allProjects = await getAllProjects();
   const projectMap = new Map(allProjects.map((p) => [p.id, p.name]));
 
-  const allUsers = await db
-    .select({ id: users.id, name: users.name, email: users.email })
-    .from(users)
-    .orderBy(users.name);
-
+  const allUsers = await getAllUsers();
   const userMap = new Map(allUsers.map((u) => [u.id, u.name]));
 
   const taskRows = allTasks.map((t) => ({

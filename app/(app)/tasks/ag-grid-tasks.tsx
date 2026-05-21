@@ -4,7 +4,17 @@ import { useMemo, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import {
+  ModuleRegistry,
+  ClientSideRowModelModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule,
+  PaginationModule,
+  RowSelectionModule,
+  ColumnAutoSizeModule,
+  ValidationModule,
+} from "ag-grid-community";
 import { updateTaskStatus } from "@/lib/actions/tasks";
 import type { TaskRow, GridContext } from "./ag-grid-constants";
 import {
@@ -15,7 +25,16 @@ import {
 } from "./ag-grid-cell-renderers";
 import { StatusDropdown } from "./ag-grid-status-dropdown";
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule,
+  PaginationModule,
+  RowSelectionModule,
+  ColumnAutoSizeModule,
+  ValidationModule,
+]);
 
 export function AgGridTasks({ tasks }: { tasks: TaskRow[] }) {
   const router = useRouter();
@@ -52,7 +71,7 @@ export function AgGridTasks({ tasks }: { tasks: TaskRow[] }) {
       field: "status",
       headerName: "Status",
       width: 150,
-      filter: "agSetColumnFilter",
+      filter: "agTextColumnFilter",
       floatingFilter: true,
       cellRenderer: StatusCellRenderer,
     },
@@ -60,7 +79,7 @@ export function AgGridTasks({ tasks }: { tasks: TaskRow[] }) {
       field: "priority",
       headerName: "Priority",
       width: 110,
-      filter: "agSetColumnFilter",
+      filter: "agTextColumnFilter",
       floatingFilter: true,
       cellRenderer: PriorityCellRenderer,
     },

@@ -49,17 +49,11 @@ export default async function TaskDetailPage(props: {
   const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
   if (!task) redirect("/tasks");
 
-  const [author] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, task.creatorId));
-
-  const [assignee] = task.assigneeId
-    ? await db.select().from(users).where(eq(users.id, task.assigneeId))
-    : [];
+  const allUsers = await db.select().from(users);
+  const userNames = new Map(allUsers.map((u) => [u.id, u.name]));
 
   const [project] = task.projectId
-    ? await db.select().from(projects).where(eq(projects.id, task.projectId))
+    ? await db.select({ name: projects.name }).from(projects).where(eq(projects.id, task.projectId))
     : [];
 
   const taskComments = await db
@@ -67,9 +61,6 @@ export default async function TaskDetailPage(props: {
     .from(comments)
     .where(eq(comments.taskId, id))
     .orderBy(comments.createdAt);
-
-  const allUsers = await db.select().from(users);
-  const userNames = new Map(allUsers.map((u) => [u.id, u.name]));
 
   const logs = await db
     .select()
@@ -100,8 +91,8 @@ export default async function TaskDetailPage(props: {
           <div className="mt-2 flex items-center justify-between gap-4">
             <p className="text-sm text-[#1d1d1d]/50">
               {project?.name && `${project.name} · `}
-              Created by {author?.name || "Unknown"}
-              {assignee?.name && ` · Assigned to ${assignee.name}`}
+              Created by {userNames.get(task.creatorId) || "Unknown"}
+              {task.assigneeId && ` · Assigned to ${userNames.get(task.assigneeId) || "Unknown"}`}
               {task.dueDate &&
                 ` · Due ${new Date(task.dueDate).toLocaleDateString()}`}
             </p>

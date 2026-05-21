@@ -67,13 +67,7 @@ export async function deleteUser(userId: string) {
   await db.delete(comments).where(eq(comments.authorId, userId));
   await db.delete(projectMembers).where(eq(projectMembers.userId, userId));
 
-  const userTasks = await db
-    .select({ id: tasks.id })
-    .from(tasks)
-    .where(eq(tasks.assigneeId, userId));
-  for (const t of userTasks) {
-    await db.update(tasks).set({ assigneeId: null }).where(eq(tasks.id, t.id));
-  }
+  await db.update(tasks).set({ assigneeId: null }).where(eq(tasks.assigneeId, userId));
 
   await db.delete(users).where(eq(users.id, userId));
 

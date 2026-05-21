@@ -1,9 +1,12 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { tasks, projects, users } from "@/lib/db/schema";
-import { count, eq } from "drizzle-orm";
 import { ListTodo, FolderKanban, Users, Clock } from "lucide-react";
+import {
+  getTaskCount,
+  getProjectCount,
+  getUserCount,
+  getInProgressTaskCount,
+} from "@/lib/data";
 
 const kpiCards = [
   { label: "Total Tasks", icon: ListTodo, key: "tasks" as const },
@@ -16,19 +19,11 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [taskCount] = await db.select({ value: count() }).from(tasks);
-  const [projectCount] = await db.select({ value: count() }).from(projects);
-  const [userCount] = await db.select({ value: count() }).from(users);
-  const [inProgressCount] = await db
-    .select({ value: count() })
-    .from(tasks)
-    .where(eq(tasks.status, "in_progress"));
-
   const counts = {
-    tasks: taskCount.value,
-    projects: projectCount.value,
-    users: userCount.value,
-    inProgress: inProgressCount.value,
+    tasks: await getTaskCount(),
+    projects: await getProjectCount(),
+    users: await getUserCount(),
+    inProgress: await getInProgressTaskCount(),
   };
 
   return (

@@ -2,14 +2,15 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { projects, tasks, projectMembers, users } from "@/lib/db/schema";
-import { eq, inArray, sql } from "drizzle-orm";
+import { projects, tasks, projectMembers } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Users, FolderKanban } from "lucide-react";
 import { DeleteProjectButton } from "./delete-project-button";
 import { ProjectMembers } from "./project-members";
 import { TaskCreatePanel } from "@/app/(app)/tasks/task-create-panel";
+import { getAllUsers, getAllProjects } from "@/lib/data";
 
 const statusLabels: Record<string, string> = {
   todo: "To Do",
@@ -51,31 +52,15 @@ export default async function ProjectDetailPage(props: {
     .from(projectMembers)
     .where(eq(projectMembers.projectId, id));
 
-  const userIds = memberRows.map((m) => m.userId);
-  const memberUsers =
-    userIds.length > 0
-      ? await db.select().from(users).where(inArray(users.id, userIds))
-      : [];
+  const allUsers = await getAllUsers();
+  const userMap = new Map(allUsers.map((u) => [u.id, u]));
 
   const members = memberRows.map((m) => ({
     ...m,
-    user:
-      memberUsers.find((u) => u.id === m.userId) || {
-        name: "Unknown",
-        email: "",
-      },
+    user: userMap.get(m.userId) || { name: "Unknown", email: "" },
   }));
 
-  const allUsers = await db
-    .select({ id: users.id, name: users.name, email: users.email })
-    .from(users)
-    .orderBy(users.name);
-
-  const allProjects = await db
-    .select({ id: projects.id, name: projects.name })
-    .from(projects)
-    .where(sql`TRUE`)
-    .orderBy(projects.createdAt);
+  const allProjects = await getAllProjects();
 
   return (
     <div className="space-y-8">
