@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useState, useRef } from "react";
+import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
@@ -42,13 +42,19 @@ export function AgGridTasks({
   userRole,
   projects,
   users,
+  refreshTrigger = 0,
 }: {
   userRole?: string;
   projects?: { id: string; name: string }[];
   users?: { id: string; name: string; email: string }[];
+  refreshTrigger?: number;
 }) {
   const router = useRouter();
   const gridRef = useRef<AgGridReact>(null);
+
+  useEffect(() => {
+    gridRef.current?.api?.refreshInfiniteCache();
+  }, [refreshTrigger]);
   const isAdmin = userRole === "super_admin" || userRole === "admin";
   const [statusTarget, setStatusTarget] = useState<{
     rowId: string;

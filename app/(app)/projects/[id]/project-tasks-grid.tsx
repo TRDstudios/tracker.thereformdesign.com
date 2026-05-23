@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
@@ -77,14 +77,20 @@ export function ProjectTasksGrid({
   projectId,
   projects,
   users,
+  refreshTrigger = 0,
 }: {
   projectId: string;
   projects?: ProjectOption[];
   users?: UserOption[];
+  refreshTrigger?: number;
 }) {
   const router = useRouter();
   const gridRef = useRef<AgGridReact>(null);
   const [editingTask, setEditingTask] = useState<TaskRowData | null>(null);
+
+  useEffect(() => {
+    gridRef.current?.api?.refreshInfiniteCache();
+  }, [refreshTrigger]);
 
   const ctx: GridContext = useMemo(() => ({ onEdit: setEditingTask }), []);
 

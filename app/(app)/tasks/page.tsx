@@ -1,8 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getAllProjects, getAllUsers } from "@/lib/data";
-import { AgGridTasks } from "./ag-grid-tasks";
-import { TaskCreatePanel } from "./task-create-panel";
+import { TasksPageClient } from "./tasks-page-client";
 
 export default async function TasksPage() {
   const session = await auth();
@@ -22,9 +21,12 @@ export default async function TasksPage() {
             View and manage all tasks
           </p>
         </div>
-        <TaskCreatePanel projects={allProjects} users={allUsers} />
       </div>
-      <AgGridTasks userRole={session.user.role} projects={allProjects} users={allUsers} />
+      <TasksPageClient
+        userRole={session.user.role}
+        projects={allProjects}
+        users={allUsers}
+      />
     </div>
   );
 }

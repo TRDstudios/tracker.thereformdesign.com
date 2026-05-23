@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
 import {
@@ -129,11 +129,17 @@ function ActionsRenderer(
 export function AgGridUsers({
   isSuperAdmin,
   currentUserId,
+  refreshTrigger = 0,
 }: {
   isSuperAdmin: boolean;
   currentUserId: string;
+  refreshTrigger?: number;
 }) {
   const gridRef = useRef<AgGridReact>(null);
+
+  useEffect(() => {
+    gridRef.current?.api?.refreshInfiniteCache();
+  }, [refreshTrigger]);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [pendingUserName, setPendingUserName] = useState<string>("");

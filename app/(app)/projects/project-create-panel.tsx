@@ -13,7 +13,7 @@ interface UserOption {
 }
 
 export function ProjectCreatePanel({
-  onSuccess,
+  onSuccess: externalOnSuccess,
   users = [],
 }: {
   onSuccess?: () => void;
@@ -31,7 +31,7 @@ export function ProjectCreatePanel({
       </Button>
 
       <SlidePanel open={open} onClose={() => setOpen(false)} title="Create Project">
-        <ProjectForm users={users} onSuccess={() => { setOpen(false); onSuccess?.(); }} />
+        <ProjectForm users={users} onSuccess={() => { setOpen(false); externalOnSuccess?.(); }} />
       </SlidePanel>
     </>
   );

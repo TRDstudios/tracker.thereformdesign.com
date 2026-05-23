@@ -22,11 +22,13 @@ export function TaskCreatePanel({
   users = [],
   defaultProjectId,
   children,
+  onSuccess,
 }: {
   projects?: ProjectOption[];
   users?: UserOption[];
   defaultProjectId?: string;
   children?: React.ReactNode;
+  onSuccess?: () => void;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -48,7 +50,7 @@ export function TaskCreatePanel({
           projects={projects}
           users={users}
           defaultProjectId={defaultProjectId}
-          onSuccess={() => setOpen(false)}
+          onSuccess={() => { setOpen(false); onSuccess?.(); }}
         />
       </SlidePanel>
     </>

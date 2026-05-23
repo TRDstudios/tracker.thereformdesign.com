@@ -6,7 +6,13 @@ import { SlidePanel } from "@/components/ui/slide-panel";
 import { UserPlus } from "lucide-react";
 import { CreateUserForm } from "./create-user-form";
 
-export function UserCreatePanel({ userRole }: { userRole: string }) {
+export function UserCreatePanel({
+  userRole,
+  onSuccess: externalOnSuccess,
+}: {
+  userRole: string;
+  onSuccess?: () => void;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -19,7 +25,7 @@ export function UserCreatePanel({ userRole }: { userRole: string }) {
       </Button>
 
       <SlidePanel open={open} onClose={() => setOpen(false)} title="Create User">
-        <CreateUserForm userRole={userRole} onSuccess={() => setOpen(false)} />
+        <CreateUserForm userRole={userRole} onSuccess={() => { setOpen(false); externalOnSuccess?.(); }} />
       </SlidePanel>
     </>
   );

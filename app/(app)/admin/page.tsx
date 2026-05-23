@@ -1,8 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Shield } from "lucide-react";
-import { AgGridUsers } from "./ag-grid-users";
-import { UserCreatePanel } from "./user-create-panel";
+import { AdminPageClient } from "./admin-page-client";
 
 export default async function AdminPage() {
   const session = await auth();
@@ -28,10 +27,13 @@ export default async function AdminPage() {
             </p>
           </div>
         </div>
-        <UserCreatePanel userRole={session.user.role} />
       </div>
 
-      <AgGridUsers isSuperAdmin={isSuperAdmin} currentUserId={session.user.id} />
+      <AdminPageClient
+        isSuperAdmin={isSuperAdmin}
+        currentUserId={session.user.id}
+        userRole={session.user.role}
+      />
     </div>
   );
 }

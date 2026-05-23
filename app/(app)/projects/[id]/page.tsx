@@ -6,11 +6,10 @@ import { projects } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, FolderKanban } from "lucide-react";
+import { Pencil, FolderKanban } from "lucide-react";
 import { DeleteProjectButton } from "./delete-project-button";
-import { TaskCreatePanel } from "@/app/(app)/tasks/task-create-panel";
 import { getAllUsers, getAllProjects } from "@/lib/data";
-import { ProjectTasksGrid } from "./project-tasks-grid";
+import { ProjectDetailClient } from "./project-detail-client";
 
 export default async function ProjectDetailPage(props: {
   params: Promise<{ id: string }>;
@@ -67,18 +66,6 @@ export default async function ProjectDetailPage(props: {
           {session.user.role !== "user" && (
             <DeleteProjectButton projectId={project.id} />
           )}
-          <TaskCreatePanel
-            projects={allProjects}
-            users={allUsers}
-            defaultProjectId={id}
-          >
-            <Button
-              size="sm"
-              className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
-            >
-              <Plus className="mr-1 h-4 w-4" /> New Task
-            </Button>
-          </TaskCreatePanel>
         </div>
       </div>
 
@@ -167,28 +154,11 @@ export default async function ProjectDetailPage(props: {
         </div>
       ) : null}
 
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[#1d1d1d]">Tasks</h2>
-          <TaskCreatePanel
-            projects={allProjects}
-            users={allUsers}
-            defaultProjectId={id}
-          >
-            <Button
-              size="sm"
-              className="rounded-lg bg-[#f5eb10] text-[#1d1d1d] font-semibold hover:bg-[#f5eb10]/90 shadow-sm"
-            >
-              <Plus className="mr-1 h-4 w-4" /> New Task
-            </Button>
-          </TaskCreatePanel>
-        </div>
-        <ProjectTasksGrid
-          projectId={id}
-          projects={allProjects}
-          users={allUsers}
-        />
-      </div>
+      <ProjectDetailClient
+        projectId={id}
+        projects={allProjects}
+        users={allUsers}
+      />
     </div>
   );
 }

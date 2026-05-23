@@ -4,8 +4,7 @@ import { redirect } from "next/navigation";
 import { FolderKanban } from "lucide-react";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { AgGridProjects } from "./ag-grid-projects";
-import { ProjectCreatePanel } from "./project-create-panel";
+import { ProjectsPageClient } from "./projects-page-client";
 
 export default async function ProjectsPage() {
   const session = await auth();
@@ -35,10 +34,9 @@ export default async function ProjectsPage() {
             </p>
           </div>
         </div>
-        <ProjectCreatePanel users={allUsers} />
       </div>
 
-      <AgGridProjects isAdmin={isAdmin} />
+      <ProjectsPageClient isAdmin={isAdmin} users={allUsers} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
@@ -49,12 +49,18 @@ interface GridContext {
 
 export function AgGridProjects({
   isAdmin,
+  refreshTrigger = 0,
 }: {
   isAdmin: boolean;
+  refreshTrigger?: number;
 }) {
   const router = useRouter();
   const gridRef = useRef<AgGridReact>(null);
   const [editingProject, setEditingProject] = useState<ProjectRowData | null>(null);
+
+  useEffect(() => {
+    gridRef.current?.api?.refreshInfiniteCache();
+  }, [refreshTrigger]);
 
   const handleDelete = async (projectId: string) => {
     if (!confirm("Delete this project and all its tasks?")) return;
