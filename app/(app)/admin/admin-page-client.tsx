@@ -17,10 +17,12 @@ export function AdminPageClient({
 
   return (
     <>
-      <UserCreatePanel
-        userRole={userRole}
-        onSuccess={() => setRefreshTrigger((t) => t + 1)}
-      />
+      <div className="flex justify-end mb-4">
+        <UserCreatePanel
+          userRole={userRole}
+          onSuccess={() => setRefreshTrigger((t) => t + 1)}
+        />
+      </div>
       <AgGridUsers
         isSuperAdmin={isSuperAdmin}
         currentUserId={currentUserId}

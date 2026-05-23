@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Sidebar } from "./sidebar";
-import { ProfileDropdownClient } from "./profile-dropdown-client";
+import { Navbar } from "./navbar";
+import { PageTitleProvider } from "@/lib/page-title-context";
 
 export default async function AppLayout({
   children,
@@ -19,18 +20,18 @@ export default async function AppLayout({
     .slice(0, 2);
 
   return (
-    <div className="flex min-h-screen bg-[#fafaf9]">
-      <Sidebar userRole={session.user.role ?? "user"} />
-      <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center justify-end gap-4 border-b bg-white px-6 md:px-6 pl-12 md:pl-6">
-          <ProfileDropdownClient
+    <PageTitleProvider>
+      <div className="flex min-h-screen bg-[#fafaf9]">
+        <Sidebar userRole={session.user.role ?? "user"} />
+        <div className="flex flex-1 flex-col">
+          <Navbar
             name={session.user.name ?? ""}
             role={session.user.role ?? "user"}
             initials={initials ?? ""}
           />
-        </header>
-        <main className="flex-1 p-8">{children}</main>
+          <main className="flex-1 p-8">{children}</main>
+        </div>
       </div>
-    </div>
+    </PageTitleProvider>
   );
 }

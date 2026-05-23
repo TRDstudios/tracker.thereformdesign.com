@@ -33,9 +33,31 @@ export const getAllProjects = cache(async () => {
     .orderBy(projects.createdAt);
 });
 
+export const getPerPersonStats = cache(async () => {
+  const rows = await db
+    .select({
+      name: users.name,
+      profession: users.profession,
+      completed: sql<number>`count(*) filter (where ${tasks.status} = 'done')`,
+      pending: sql<number>`count(*) filter (where ${tasks.status} != 'done' or ${tasks.status} is null)`,
+    })
+    .from(users)
+    .leftJoin(tasks, eq(tasks.assigneeId, users.id))
+    .groupBy(users.id, users.name, users.profession)
+    .orderBy(users.name);
+  return rows;
+});
+
 export const getAllUsers = cache(async () => {
   return db
     .select({ id: users.id, name: users.name, email: users.email })
     .from(users)
     .orderBy(users.name);
+});
+
+export const getAllTasks = cache(async () => {
+  return db
+    .select({ id: tasks.id, title: tasks.title, projectId: tasks.projectId })
+    .from(tasks)
+    .orderBy(tasks.createdAt);
 });

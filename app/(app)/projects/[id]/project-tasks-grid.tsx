@@ -113,12 +113,30 @@ export function ProjectTasksGrid({
       minWidth: 200,
       filter: "agTextColumnFilter",
       floatingFilter: true,
-      cellRenderer: (params: ICellRendererParams) => (
-        <div className="flex items-center gap-2">
-          <ListTodo className="h-4 w-4 text-[#f5eb10]" />
-          <span className="font-medium text-[#1d1d1d]">{params.value || ""}</span>
-        </div>
-      ),
+      cellRenderer: (params: ICellRendererParams) => {
+        const st = params.data?.subtasks as { id: string; title: string }[] | undefined;
+        return (
+          <div>
+            <div className="flex items-center gap-2">
+              <ListTodo className="h-4 w-4 text-[#f5eb10]" />
+              <span className="font-medium text-[#1d1d1d]">{params.value || ""}</span>
+            </div>
+            {st?.length ? (
+              <div className="mt-0.5 space-y-0.5">
+                {st.slice(0, 3).map((s: { id: string; title: string }) => (
+                  <div key={s.id} className="flex items-center gap-1.5 pl-7">
+                    <div className="h-1 w-1 rounded-full bg-[#a1a1a1]" />
+                    <span className="text-[11px] text-[#a1a1a1]">{s.title}</span>
+                  </div>
+                ))}
+                {st.length > 3 ? (
+                  <div className="pl-7 text-[11px] text-[#a1a1a1]/50">+{st.length - 3} more</div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       field: "status",

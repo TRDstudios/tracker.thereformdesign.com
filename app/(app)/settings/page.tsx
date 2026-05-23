@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Settings, User, Mail, Shield } from "lucide-react";
+import { User, Mail, Shield } from "lucide-react";
+import { PageTitleSetter } from "@/lib/page-title-context";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -13,21 +14,8 @@ export default async function SettingsPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f5eb10]/20">
-          <Settings className="h-6 w-6 text-[#1d1d1d]" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
-            Settings
-          </h1>
-          <p className="mt-1 text-sm text-[#1d1d1d]/50">
-            Manage your account settings
-          </p>
-        </div>
-      </div>
-
+    <>
+      <PageTitleSetter title="Settings" />
       <div className="rounded-xl border bg-white shadow-sm">
         <div className="border-b border-[#e5e5e5] px-6 py-4">
           <h2 className="text-sm font-semibold text-[#1d1d1d]">Profile</h2>
@@ -48,6 +36,6 @@ export default async function SettingsPage() {
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 }

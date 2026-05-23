@@ -17,11 +17,13 @@ export function TasksPageClient({
 
   return (
     <>
-      <TaskCreatePanel
-        projects={projects}
-        users={users}
-        onSuccess={() => setRefreshTrigger((t) => t + 1)}
-      />
+      <div className="flex justify-end mb-4">
+        <TaskCreatePanel
+          projects={projects}
+          users={users}
+          onSuccess={() => setRefreshTrigger((t) => t + 1)}
+        />
+      </div>
       <AgGridTasks
         userRole={userRole}
         projects={projects}

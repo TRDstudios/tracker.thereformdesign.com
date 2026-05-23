@@ -22,7 +22,11 @@ export async function createTask(formData: FormData) {
   if (!session?.user) throw new Error("Unauthorized");
   await checkRateLimit("createTask");
 
-  const parsed = createTaskSchema.parse(Object.fromEntries(formData));
+  const raw = Object.fromEntries(formData);
+  const parsed = createTaskSchema.parse({
+    ...raw,
+    subtaskTitles: raw.subtaskTitles ? JSON.parse(raw.subtaskTitles as string) : undefined,
+  });
 
   const [task] = await db
     .insert(tasks)
@@ -36,6 +40,20 @@ export async function createTask(formData: FormData) {
       dueDate: parsed.dueDate ? new Date(parsed.dueDate) : null,
     })
     .returning();
+
+  if (parsed.subtaskTitles?.length) {
+    await db.insert(tasks).values(
+      parsed.subtaskTitles.map((title) => ({
+        title,
+        projectId: parsed.projectId ?? null,
+        assigneeId: null,
+        priority: "medium" as const,
+        creatorId: session.user.id,
+        parentId: task.id,
+        status: "todo" as const,
+      })),
+    );
+  }
 
   await db.insert(activityLogs).values({
     userId: session.user.id,
@@ -103,7 +121,11 @@ export async function updateTask(id: string, formData: FormData) {
   if (!session?.user) throw new Error("Unauthorized");
   await checkRateLimit("updateTask");
 
-  const parsed = updateTaskSchema.parse(Object.fromEntries(formData));
+  const raw = Object.fromEntries(formData);
+  const parsed = updateTaskSchema.parse({
+    ...raw,
+    subtaskTitles: raw.subtaskTitles ? JSON.parse(raw.subtaskTitles as string) : undefined,
+  });
 
   await db
     .update(tasks)
@@ -117,6 +139,22 @@ export async function updateTask(id: string, formData: FormData) {
       updatedAt: new Date(),
     })
     .where(eq(tasks.id, id));
+
+  await db.delete(tasks).where(eq(tasks.parentId, id));
+
+  if (parsed.subtaskTitles?.length) {
+    await db.insert(tasks).values(
+      parsed.subtaskTitles.map((title) => ({
+        title,
+        projectId: parsed.projectId ?? null,
+        assigneeId: null,
+        priority: "medium" as const,
+        creatorId: session.user.id,
+        parentId: id,
+        status: "todo" as const,
+      })),
+    );
+  }
 
   await db.insert(activityLogs).values({
     userId: session.user.id,
@@ -134,6 +172,7 @@ export async function deleteTask(id: string) {
   if (!session?.user) throw new Error("Unauthorized");
   await checkRateLimit("deleteTask");
 
+  await db.update(tasks).set({ parentId: null }).where(eq(tasks.parentId, id));
   await db.delete(comments).where(eq(comments.taskId, id));
   await db.delete(tasks).where(eq(tasks.id, id));
 

@@ -96,6 +96,16 @@
   border-color: #e5e5e5;
 }
 
+.ag-theme-custom .ag-header-cell:focus,
+.ag-theme-custom .ag-header-cell:focus-within,
+.ag-theme-custom .ag-cell:focus,
+.ag-theme-custom .ag-cell:focus-within,
+.ag-theme-custom .ag-row:focus,
+.ag-theme-custom .ag-row:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

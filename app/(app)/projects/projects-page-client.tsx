@@ -15,10 +15,12 @@ export function ProjectsPageClient({
 
   return (
     <>
-      <ProjectCreatePanel
-        users={users}
-        onSuccess={() => setRefreshTrigger((t) => t + 1)}
-      />
+      <div className="flex justify-end mb-4">
+        <ProjectCreatePanel
+          users={users}
+          onSuccess={() => setRefreshTrigger((t) => t + 1)}
+        />
+      </div>
       <AgGridProjects
         isAdmin={isAdmin}
         refreshTrigger={refreshTrigger}

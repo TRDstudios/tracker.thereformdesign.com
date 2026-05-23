@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getAllProjects, getAllUsers } from "@/lib/data";
+import { PageTitleSetter } from "@/lib/page-title-context";
 import { TasksPageClient } from "./tasks-page-client";
 
 export default async function TasksPage() {
@@ -11,22 +12,13 @@ export default async function TasksPage() {
   const allUsers = await getAllUsers();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
-            Tasks
-          </h1>
-          <p className="mt-1 text-sm text-[#1d1d1d]/50">
-            View and manage all tasks
-          </p>
-        </div>
-      </div>
+    <>
+      <PageTitleSetter title="Tasks" />
       <TasksPageClient
         userRole={session.user.role}
         projects={allProjects}
         users={allUsers}
       />
-    </div>
+    </>
   );
 }

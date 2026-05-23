@@ -30,8 +30,7 @@ export function ProjectDetailClient({
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#1d1d1d]">Tasks</h2>
+      <div className="flex justify-end mb-4">
         <TaskCreatePanel
           projects={projects}
           users={users}

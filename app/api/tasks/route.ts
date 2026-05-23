@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { tasks, projects, users } from "@/lib/db/schema";
-import { eq, sql, desc, asc, and, ilike, type SQL } from "drizzle-orm";
+import { eq, sql, desc, asc, and, ilike, inArray, type SQL } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
 function getSortField(colId: string) {
@@ -107,12 +107,28 @@ export async function GET(request: NextRequest) {
 
   const lastRow = countResult[0]?.value ?? 0;
 
+  const taskIds = data.map((r) => r.id);
+  const subtaskRows = taskIds.length > 0
+    ? await db
+        .select({ id: tasks.id, title: tasks.title, parentId: tasks.parentId })
+        .from(tasks)
+        .where(inArray(tasks.parentId, taskIds))
+    : [];
+
+  const subtaskMap = new Map<string, { id: string; title: string }[]>();
+  for (const st of subtaskRows) {
+    const list = subtaskMap.get(st.parentId!) || [];
+    list.push({ id: st.id, title: st.title });
+    subtaskMap.set(st.parentId!, list);
+  }
+
   const rows = data.map((r) => ({
     ...r,
     dueDate: r.dueDate ? r.dueDate.toISOString() : null,
     createdAt: r.createdAt.toISOString(),
     projectName: r.projectName ?? "",
     assigneeName: r.assigneeName ?? "",
+    subtasks: subtaskMap.get(r.id) || [],
   }));
 
   return Response.json({ rows, lastRow });

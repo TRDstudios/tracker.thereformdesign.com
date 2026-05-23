@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, jsonb, index, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, index, boolean, type AnyPgColumn } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -76,6 +76,7 @@ export const tasks = pgTable("tasks", {
     .references(() => users.id)
     .notNull(),
   dueDate: timestamp("due_date"),
+  parentId: uuid("parent_id").references((): AnyPgColumn => tasks.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [
@@ -84,6 +85,7 @@ export const tasks = pgTable("tasks", {
   index("idx_tasks_status").on(table.status),
   index("idx_tasks_created").on(table.createdAt),
   index("idx_tasks_creator").on(table.creatorId),
+  index("idx_tasks_parent").on(table.parentId),
 ]);
 
 export const comments = pgTable("comments", {

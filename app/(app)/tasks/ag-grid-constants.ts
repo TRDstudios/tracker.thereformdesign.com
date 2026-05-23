@@ -43,6 +43,7 @@ export interface TaskRowData {
   assigneeName: string;
   dueDate: string | null;
   createdAt: string;
+  subtasks?: { id: string; title: string }[];
 }
 
 export interface GridContext {
