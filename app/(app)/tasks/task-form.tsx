@@ -51,7 +51,7 @@ export function TaskForm({
           if (pid) {
             router.push(`/projects/${pid}`);
           } else {
-            router.push(`/tasks/${result.id}`);
+            router.push(`/tasks/${result.displayId || result.id}`);
           }
         }
       }

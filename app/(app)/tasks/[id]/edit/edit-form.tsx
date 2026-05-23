@@ -11,6 +11,7 @@ import { LoaderCircle } from "lucide-react";
 
 interface Task {
   id: string;
+  displayId: string | null;
   title: string;
   description: string | null;
   projectId: string | null;
@@ -44,7 +45,7 @@ export function EditTaskForm({
   const [, formAction, pending] = useActionState(
     async (_prev: unknown, formData: FormData) => {
       await updateTask(task.id, formData);
-      router.push(`/tasks/${task.id}`);
+      router.push(`/tasks/${task.displayId || task.id}`);
       router.refresh();
     },
     null,

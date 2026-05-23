@@ -1,14 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import {
   ModuleRegistry,
-  InfiniteRowModelModule,
+  ClientSideRowModelModule,
   TextFilterModule,
-  PaginationModule,
   ColumnAutoSizeModule,
   ValidationModule,
 } from "ag-grid-community";
@@ -20,12 +19,13 @@ import { ProjectEditPanel } from "./project-edit-panel";
 import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
-  InfiniteRowModelModule,
+  ClientSideRowModelModule,
   TextFilterModule,
-  PaginationModule,
   ColumnAutoSizeModule,
   ValidationModule,
 ]);
+
+const textFilterParams = { filterOptions: ["contains"] };
 
 interface ProjectRowData {
   id: string;
@@ -56,18 +56,34 @@ export function AgGridProjects({
 }) {
   const router = useRouter();
   const gridRef = useRef<AgGridReact>(null);
+  const [rowData, setRowData] = useState<ProjectRowData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingProject, setEditingProject] = useState<ProjectRowData | null>(null);
 
-  useEffect(() => {
-    gridRef.current?.api?.refreshInfiniteCache();
-  }, [refreshTrigger]);
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/projects");
+      const data = await res.json();
+      setRowData(data.rows);
+    } catch {
+      toast.error("Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadData(); }, [loadData]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { if (refreshTrigger) loadData(); }, [refreshTrigger, loadData]);
 
   const handleDelete = async (projectId: string) => {
     if (!confirm("Delete this project and all its tasks?")) return;
     try {
       await deleteProject(projectId);
       toast.success("Project deleted");
-      gridRef.current?.api?.refreshInfiniteCache();
+      loadData();
     } catch {
       toast.error("Failed to delete project");
     }
@@ -82,6 +98,7 @@ export function AgGridProjects({
       flex: 2,
       minWidth: 200,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => (
         <div className="flex items-center gap-2">
@@ -96,6 +113,7 @@ export function AgGridProjects({
       flex: 1,
       minWidth: 150,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => (
         <span className="text-sm text-[#1d1d1d]/70">{params.value || "—"}</span>
@@ -106,6 +124,7 @@ export function AgGridProjects({
       headerName: "Status",
       width: 120,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         if (!params.value) return null;
@@ -200,28 +219,7 @@ export function AgGridProjects({
   const defaultColDef = useMemo(() => ({
     sortable: true,
     resizable: true,
-    suppressHeaderMenuButton: false,
-    suppressHeaderFilterButton: false,
-  }), []);
-
-  const dataSource = useMemo<IDatasource>(() => ({
-    getRows: (params) => {
-      const queryParams = new URLSearchParams({
-        startRow: String(params.startRow),
-        endRow: String(params.endRow),
-        sortModel: JSON.stringify(params.sortModel),
-        filterModel: JSON.stringify(params.filterModel),
-      });
-
-      fetch(`/api/projects?${queryParams}`)
-        .then((res) => res.json())
-        .then((data) => {
-          params.successCallback(data.rows, data.lastRow);
-        })
-        .catch(() => {
-          params.failCallback();
-        });
-    },
+    suppressHeaderMenuButton: true,
   }), []);
 
   return (
@@ -231,23 +229,20 @@ export function AgGridProjects({
         ref={gridRef}
         columnDefs={colDefs}
         defaultColDef={defaultColDef}
-        rowModelType="infinite"
-        datasource={dataSource}
+        rowData={rowData}
+        rowModelType="clientSide"
+        loading={loading}
+        loadingOverlayComponent={GridLoadingOverlay}
         context={ctx}
         animateRows={true}
         rowHeight={56}
         headerHeight={44}
         floatingFiltersHeight={36}
-        cacheBlockSize={50}
-        maxBlocksInCache={5}
-        loadingOverlayComponent={GridLoadingOverlay}
-        suppressNoRowsOverlay={true}
-        suppressPaginationPanel={true}
       />
       </div>
       <ProjectEditPanel
         open={!!editingProject}
-        onClose={() => { setEditingProject(null); gridRef.current?.api?.refreshInfiniteCache(); }}
+        onClose={() => { setEditingProject(null); loadData(); }}
         project={editingProject}
       />
     </>

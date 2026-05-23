@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { tasks, comments, activityLogs } from "@/lib/db/schema";
 import { createTaskSchema, addCommentSchema, updateTaskSchema } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
+import { nextTaskDisplayId } from "@/lib/display-id";
 
 async function checkRateLimit(key: string) {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
@@ -28,9 +29,12 @@ export async function createTask(formData: FormData) {
     subtaskTitles: raw.subtaskTitles ? JSON.parse(raw.subtaskTitles as string) : undefined,
   });
 
+  const displayId = await nextTaskDisplayId();
+
   const [task] = await db
     .insert(tasks)
     .values({
+      displayId,
       title: parsed.title,
       description: parsed.description ?? null,
       projectId: parsed.projectId ?? null,
@@ -42,8 +46,9 @@ export async function createTask(formData: FormData) {
     .returning();
 
   if (parsed.subtaskTitles?.length) {
-    await db.insert(tasks).values(
-      parsed.subtaskTitles.map((title) => ({
+    const subs = await Promise.all(
+      parsed.subtaskTitles.map(async (title) => ({
+        displayId: await nextTaskDisplayId(),
         title,
         projectId: parsed.projectId ?? null,
         assigneeId: null,
@@ -53,6 +58,7 @@ export async function createTask(formData: FormData) {
         status: "todo" as const,
       })),
     );
+    await db.insert(tasks).values(subs);
   }
 
   await db.insert(activityLogs).values({
@@ -65,7 +71,7 @@ export async function createTask(formData: FormData) {
 
   if (parsed.projectId) revalidatePath(`/projects/${parsed.projectId}`);
   revalidatePath("/tasks");
-  return { id: task.id };
+  return { id: task.id, displayId: task.displayId };
 }
 
 export async function updateTaskStatus(id: string, status: string) {
@@ -143,8 +149,9 @@ export async function updateTask(id: string, formData: FormData) {
   await db.delete(tasks).where(eq(tasks.parentId, id));
 
   if (parsed.subtaskTitles?.length) {
-    await db.insert(tasks).values(
-      parsed.subtaskTitles.map((title) => ({
+    const subs = await Promise.all(
+      parsed.subtaskTitles.map(async (title) => ({
+        displayId: await nextTaskDisplayId(),
         title,
         projectId: parsed.projectId ?? null,
         assigneeId: null,
@@ -154,6 +161,7 @@ export async function updateTask(id: string, formData: FormData) {
         status: "todo" as const,
       })),
     );
+    await db.insert(tasks).values(subs);
   }
 
   await db.insert(activityLogs).values({

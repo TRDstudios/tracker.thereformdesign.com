@@ -1,13 +1,12 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import {
   ModuleRegistry,
-  InfiniteRowModelModule,
+  ClientSideRowModelModule,
   TextFilterModule,
-  PaginationModule,
   ColumnAutoSizeModule,
   ValidationModule,
 } from "ag-grid-community";
@@ -19,12 +18,13 @@ import { toast } from "sonner";
 import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
-  InfiniteRowModelModule,
+  ClientSideRowModelModule,
   TextFilterModule,
-  PaginationModule,
   ColumnAutoSizeModule,
   ValidationModule,
 ]);
+
+const textFilterParams = { filterOptions: ["contains"] };
 
 type ConfirmAction = "deactivate" | "delete" | null;
 
@@ -136,10 +136,23 @@ export function AgGridUsers({
   refreshTrigger?: number;
 }) {
   const gridRef = useRef<AgGridReact>(null);
+  const [rowData, setRowData] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    gridRef.current?.api?.refreshInfiniteCache();
-  }, [refreshTrigger]);
+  const loadData = useCallback(() => {
+    setLoading(true);
+    fetch("/api/users")
+      .then((res) => res.json())
+      .then((data) => setRowData(data.rows))
+      .catch(() => toast.error("Failed to load users"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadData(); }, [loadData]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { if (refreshTrigger) loadData(); }, [refreshTrigger, loadData]);
+
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [pendingUserName, setPendingUserName] = useState<string>("");
@@ -164,7 +177,7 @@ export function AgGridUsers({
     try {
       await deactivateUser(userId);
       toast.success("User deactivated");
-      gridRef.current?.api?.refreshInfiniteCache();
+      loadData();
     } catch {
       toast.error("Failed to deactivate user");
     }
@@ -174,7 +187,7 @@ export function AgGridUsers({
     try {
       await activateUser(userId);
       toast.success("User activated");
-      gridRef.current?.api?.refreshInfiniteCache();
+      loadData();
     } catch {
       toast.error("Failed to activate user");
     }
@@ -184,7 +197,7 @@ export function AgGridUsers({
     try {
       await deleteUser(userId);
       toast.success("User deleted");
-      gridRef.current?.api?.refreshInfiniteCache();
+      loadData();
     } catch {
       toast.error("Failed to delete user");
     }
@@ -209,6 +222,7 @@ export function AgGridUsers({
       flex: 1.5,
       minWidth: 200,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         if (!params.value) return null;
@@ -239,6 +253,7 @@ export function AgGridUsers({
       flex: 1.5,
       minWidth: 200,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => (
         <span className="text-sm text-[#1d1d1d]/70">{params.value}</span>
@@ -250,6 +265,7 @@ export function AgGridUsers({
       width: 110,
       sortable: true,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         if (params.value == null) return null;
@@ -268,6 +284,7 @@ export function AgGridUsers({
       headerName: "Role",
       width: 140,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         const value = params.value as string;
@@ -303,28 +320,7 @@ export function AgGridUsers({
   const defaultColDef = useMemo(() => ({
     sortable: true,
     resizable: true,
-    suppressHeaderMenuButton: false,
-    suppressHeaderFilterButton: false,
-  }), []);
-
-  const dataSource = useMemo<IDatasource>(() => ({
-    getRows: (params) => {
-      const queryParams = new URLSearchParams({
-        startRow: String(params.startRow),
-        endRow: String(params.endRow),
-        sortModel: JSON.stringify(params.sortModel),
-        filterModel: JSON.stringify(params.filterModel),
-      });
-
-      fetch(`/api/users?${queryParams}`)
-        .then((res) => res.json())
-        .then((data) => {
-          params.successCallback(data.rows, data.lastRow);
-        })
-        .catch(() => {
-          params.failCallback();
-        });
-    },
+    suppressHeaderMenuButton: true,
   }), []);
 
   return (
@@ -340,17 +336,14 @@ export function AgGridUsers({
           ref={gridRef}
           columnDefs={colDefs}
           defaultColDef={defaultColDef}
-          rowModelType="infinite"
-          datasource={dataSource}
+          rowData={rowData}
+          rowModelType="clientSide"
+          loading={loading}
+          loadingOverlayComponent={GridLoadingOverlay}
           animateRows={true}
           rowHeight={56}
           headerHeight={44}
           floatingFiltersHeight={36}
-          cacheBlockSize={100}
-          maxBlocksInCache={5}
-          loadingOverlayComponent={GridLoadingOverlay}
-          suppressNoRowsOverlay={true}
-          suppressPaginationPanel={true}
         />
       </div>
     </>

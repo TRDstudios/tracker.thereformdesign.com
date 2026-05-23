@@ -22,6 +22,7 @@ export const priorityStyles: Record<string, string> = {
 
 export interface TaskRow {
   id: string;
+  displayId: string;
   title: string;
   status: string;
   priority: string;
@@ -33,6 +34,7 @@ export interface TaskRow {
 
 export interface TaskRowData {
   id: string;
+  displayId: string;
   title: string;
   description: string | null;
   status: string;

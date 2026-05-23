@@ -59,6 +59,7 @@ export const projectMembers = pgTable("project_members", {
 
 export const tasks = pgTable("tasks", {
   id: uuid("id").defaultRandom().primaryKey(),
+  displayId: text("display_id").unique(),
   title: text("title").notNull(),
   description: text("description"),
   status: text("status", {

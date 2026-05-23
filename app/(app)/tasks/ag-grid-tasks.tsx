@@ -3,10 +3,10 @@
 import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import {
   ModuleRegistry,
-  InfiniteRowModelModule,
+  ClientSideRowModelModule,
   TextFilterModule,
   NumberFilterModule,
   DateFilterModule,
@@ -29,7 +29,7 @@ import { toast } from "sonner";
 import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
-  InfiniteRowModelModule,
+  ClientSideRowModelModule,
   TextFilterModule,
   NumberFilterModule,
   DateFilterModule,
@@ -37,6 +37,9 @@ ModuleRegistry.registerModules([
   ColumnAutoSizeModule,
   ValidationModule,
 ]);
+
+const textFilterParams = { filterOptions: ["contains"] };
+const dateFilterParams = { filterOptions: ["contains"] };
 
 export function AgGridTasks({
   userRole,
@@ -51,10 +54,9 @@ export function AgGridTasks({
 }) {
   const router = useRouter();
   const gridRef = useRef<AgGridReact>(null);
+  const [rowData, setRowData] = useState<TaskRowData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    gridRef.current?.api?.refreshInfiniteCache();
-  }, [refreshTrigger]);
   const isAdmin = userRole === "super_admin" || userRole === "admin";
   const [statusTarget, setStatusTarget] = useState<{
     rowId: string;
@@ -65,24 +67,50 @@ export function AgGridTasks({
 
   const ctx: GridContext = useMemo(() => ({ setStatusTarget, onEdit: setEditingTask }), []);
 
+  const loadData = useCallback((showLoading?: boolean) => {
+    if (showLoading) setLoading(true);
+    fetch("/api/tasks")
+      .then((res) => res.json())
+      .then((data) => setRowData(data.rows))
+      .catch(() => toast.error("Failed to load tasks"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadData(); }, [loadData]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { if (refreshTrigger) loadData(true); }, [refreshTrigger, loadData]);
+
   const handleDelete = useCallback(async (taskId: string) => {
     if (!confirm("Delete this task?")) return;
     try {
       await deleteTask(taskId);
       toast.success("Task deleted");
-      gridRef.current?.api?.refreshInfiniteCache();
+      loadData();
     } catch {
       toast.error("Failed to delete task");
     }
-  }, []);
+  }, [loadData]);
 
   const colDefs = useMemo<ColDef[]>(() => [
+    {
+      field: "displayId",
+      headerName: "ID",
+      width: 110,
+      filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
+      floatingFilter: true,
+      cellRenderer: (params: ICellRendererParams) => (
+        <span className="font-mono text-xs font-semibold text-[#a1a1a1]">{params.value || ""}</span>
+      ),
+    },
     {
       field: "projectName",
       headerName: "Project",
       flex: 1,
       minWidth: 150,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: ProjectCellRenderer,
     },
@@ -92,6 +120,7 @@ export function AgGridTasks({
       flex: 2,
       minWidth: 200,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         const st = params.data?.subtasks as { id: string; title: string }[] | undefined;
@@ -120,6 +149,7 @@ export function AgGridTasks({
       headerName: "Status",
       width: 150,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: StatusCellRenderer,
     },
@@ -128,6 +158,7 @@ export function AgGridTasks({
       headerName: "Priority",
       width: 110,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: PriorityCellRenderer,
     },
@@ -136,6 +167,7 @@ export function AgGridTasks({
       headerName: "Assignee",
       width: 150,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => (
         <span className="text-[#1d1d1d]/70">{params.value || "—"}</span>
@@ -146,6 +178,7 @@ export function AgGridTasks({
       headerName: "Due Date",
       width: 120,
       filter: "agDateColumnFilter",
+      filterParams: dateFilterParams,
       floatingFilter: true,
       cellRenderer: DateCellRenderer,
     },
@@ -154,6 +187,7 @@ export function AgGridTasks({
       headerName: "Created",
       width: 120,
       filter: "agDateColumnFilter",
+      filterParams: dateFilterParams,
       floatingFilter: true,
       cellRenderer: DateCellRenderer,
     },
@@ -168,7 +202,7 @@ export function AgGridTasks({
         return (
           <div className="flex items-center gap-1">
             <button
-              onClick={(e) => { e.stopPropagation(); router.push(`/tasks/${params.data.id}`); }}
+              onClick={(e) => { e.stopPropagation(); router.push(`/tasks/${params.data.displayId || params.data.id}`); }}
               className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[#a1a1a1] transition-colors hover:bg-[#f5f5f4] hover:text-[#1d1d1d]"
               title="View"
             >
@@ -207,8 +241,7 @@ export function AgGridTasks({
   const defaultColDef = useMemo(() => ({
     sortable: true,
     resizable: true,
-    suppressHeaderMenuButton: false,
-    suppressHeaderFilterButton: false,
+    suppressHeaderMenuButton: true,
   }), []);
 
   const handleStatusSelect = useCallback(async (value: string) => {
@@ -218,27 +251,8 @@ export function AgGridTasks({
     }
     await updateTaskStatus(statusTarget.rowId, value);
     setStatusTarget(null);
-  }, [statusTarget]);
-
-  const dataSource = useMemo<IDatasource>(() => ({
-    getRows: (params) => {
-      const queryParams = new URLSearchParams({
-        startRow: String(params.startRow),
-        endRow: String(params.endRow),
-        sortModel: JSON.stringify(params.sortModel),
-        filterModel: JSON.stringify(params.filterModel),
-      });
-
-      fetch(`/api/tasks?${queryParams}`)
-        .then((res) => res.json())
-        .then((data) => {
-          params.successCallback(data.rows, data.lastRow);
-        })
-        .catch(() => {
-          params.failCallback();
-        });
-    },
-  }), []);
+    loadData();
+  }, [statusTarget, loadData]);
 
   return (
     <>
@@ -248,19 +262,16 @@ export function AgGridTasks({
           columnDefs={colDefs}
           defaultColDef={defaultColDef}
           context={ctx}
-          rowModelType="infinite"
-          datasource={dataSource}
+          rowData={rowData}
+          rowModelType="clientSide"
+          loading={loading}
+          loadingOverlayComponent={GridLoadingOverlay}
           rowSelection="multiple"
           animateRows={true}
           suppressRowClickSelection={true}
           rowHeight={44}
           headerHeight={44}
           floatingFiltersHeight={36}
-          cacheBlockSize={50}
-          maxBlocksInCache={5}
-          loadingOverlayComponent={GridLoadingOverlay}
-          suppressNoRowsOverlay={true}
-          suppressPaginationPanel={true}
         />
       </div>
       {statusTarget && (
@@ -273,7 +284,7 @@ export function AgGridTasks({
       )}
       <TaskEditPanel
         open={!!editingTask}
-        onClose={() => { setEditingTask(null); gridRef.current?.api?.refreshInfiniteCache(); }}
+        onClose={() => { setEditingTask(null); loadData(); }}
         task={editingTask}
         projects={projects}
         users={users}

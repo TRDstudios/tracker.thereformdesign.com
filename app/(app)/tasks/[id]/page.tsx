@@ -9,7 +9,7 @@ import {
   activityLogs,
   projects,
 } from "@/lib/db/schema";
-import { eq, desc, and, gte } from "drizzle-orm";
+import { eq, desc, and, gte, or } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, ListTodo } from "lucide-react";
@@ -46,7 +46,14 @@ export default async function TaskDetailPage(props: {
 
   const { id } = await props.params;
 
-  const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+  const [task] = await db
+    .select()
+    .from(tasks)
+    .where(
+      id.startsWith("TASK-")
+        ? eq(tasks.displayId, id)
+        : or(eq(tasks.displayId, id), eq(tasks.id, id)),
+    );
   if (!task) redirect("/tasks");
 
   const allUsers = await db.select({ id: users.id, name: users.name }).from(users);
@@ -59,7 +66,7 @@ export default async function TaskDetailPage(props: {
   const taskComments = await db
     .select()
     .from(comments)
-    .where(eq(comments.taskId, id))
+    .where(eq(comments.taskId, task.id))
     .orderBy(comments.createdAt);
 
   // eslint-disable-next-line react-hooks/purity
@@ -67,7 +74,7 @@ export default async function TaskDetailPage(props: {
   const logs = await db
     .select()
     .from(activityLogs)
-    .where(and(eq(activityLogs.entityId, id), gte(activityLogs.createdAt, ninetyDaysAgo)))
+    .where(and(eq(activityLogs.entityId, task.id), gte(activityLogs.createdAt, ninetyDaysAgo)))
     .orderBy(desc(activityLogs.createdAt));
 
   return (
@@ -79,7 +86,7 @@ export default async function TaskDetailPage(props: {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
-              {task.title}
+              {task.displayId && <span className="text-[#a1a1a1]">{task.displayId} — </span>}{task.title}
             </h1>
             <Badge variant={priorityBadge[task.priority]} className="rounded-md">
               {task.priority}
@@ -99,7 +106,7 @@ export default async function TaskDetailPage(props: {
                 ` · Due ${new Date(task.dueDate).toLocaleDateString()}`}
             </p>
             <div className="flex items-center gap-2 shrink-0">
-              <Link href={`/tasks/${id}/edit`}>
+              <Link href={`/tasks/${task.displayId || task.id}/edit`}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -108,13 +115,13 @@ export default async function TaskDetailPage(props: {
                   <Pencil className="mr-1 h-4 w-4" /> Edit
                 </Button>
               </Link>
-              <DeleteTaskButton taskId={id} />
+              <DeleteTaskButton taskId={task.id} />
             </div>
           </div>
         </div>
       </div>
 
-      <StatusButtons taskId={id} currentStatus={task.status} />
+      <StatusButtons taskId={task.id} currentStatus={task.status} />
 
       {task.description && (
         <div className="rounded-xl border bg-white p-5 shadow-sm">
@@ -145,7 +152,7 @@ export default async function TaskDetailPage(props: {
             </p>
           ))}
           <div className="border-t border-[#e5e5e5]" />
-          <CommentForm taskId={id} />
+          <CommentForm taskId={task.id} />
         </div>
       </div>
     </div>

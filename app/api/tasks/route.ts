@@ -1,21 +1,8 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { tasks, projects, users } from "@/lib/db/schema";
-import { eq, sql, desc, asc, and, ilike, inArray, type SQL } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-
-function getSortField(colId: string) {
-  switch (colId) {
-    case "projectName": return projects.name;
-    case "title": return tasks.title;
-    case "status": return tasks.status;
-    case "priority": return tasks.priority;
-    case "assigneeName": return users.name;
-    case "dueDate": return tasks.dueDate;
-    case "createdAt": return tasks.createdAt;
-    default: return null;
-  }
-}
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -24,23 +11,12 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams;
-  const startRow = parseInt(searchParams.get("startRow") || "0");
-  const endRow = parseInt(searchParams.get("endRow") || "100");
-  const sortModel = JSON.parse(searchParams.get("sortModel") || "[]") as {
-    colId: string;
-    sort: "asc" | "desc";
-  }[];
-  const filterModel = JSON.parse(searchParams.get("filterModel") || "{}") as Record<
-    string,
-    { filterType: string; type: string; filter?: string; filterTo?: string }
-  >;
-
   const projectId = searchParams.get("projectId");
 
   const isAdmin =
     session.user.role === "super_admin" || session.user.role === "admin";
 
-  const conditions: SQL[] = [];
+  const conditions = [];
 
   if (!isAdmin) {
     conditions.push(eq(tasks.assigneeId, session.user.id));
@@ -50,35 +26,12 @@ export async function GET(request: NextRequest) {
     conditions.push(eq(tasks.projectId, projectId));
   }
 
-  for (const [field, filter] of Object.entries(filterModel)) {
-    if (!filter.filter) continue;
-    if (field === "projectName") {
-      conditions.push(ilike(projects.name, `%${filter.filter}%`));
-    } else if (field === "assigneeName") {
-      conditions.push(ilike(users.name, `%${filter.filter}%`));
-    } else if (field === "title") {
-      conditions.push(ilike(tasks.title, `%${filter.filter}%`));
-    } else if (field === "status") {
-      conditions.push(eq(tasks.status, filter.filter as "todo" | "in_progress" | "review" | "done"));
-    } else if (field === "priority") {
-      conditions.push(eq(tasks.priority, filter.filter as "low" | "medium" | "high"));
-    }
-  }
-
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  const orderByClauses = sortModel.length > 0
-    ? sortModel.map((s) => {
-        const col = getSortField(s.colId);
-        return col ? (s.sort === "desc" ? desc(col) : asc(col)) : desc(tasks.createdAt);
-      })
-    : [desc(tasks.createdAt)];
-
-  const pageSize = endRow - startRow;
 
   const data = await db
     .select({
       id: tasks.id,
+      displayId: tasks.displayId,
       title: tasks.title,
       description: tasks.description,
       status: tasks.status,
@@ -94,18 +47,7 @@ export async function GET(request: NextRequest) {
     .leftJoin(projects, eq(tasks.projectId, projects.id))
     .leftJoin(users, eq(tasks.assigneeId, users.id))
     .where(whereClause)
-    .orderBy(...orderByClauses)
-    .limit(pageSize)
-    .offset(startRow);
-
-  const countResult = await db
-    .select({ value: sql<number>`count(*)` })
-    .from(tasks)
-    .leftJoin(projects, eq(tasks.projectId, projects.id))
-    .leftJoin(users, eq(tasks.assigneeId, users.id))
-    .where(whereClause);
-
-  const lastRow = countResult[0]?.value ?? 0;
+    .orderBy(desc(tasks.createdAt));
 
   const taskIds = data.map((r) => r.id);
   const subtaskRows = taskIds.length > 0
@@ -131,5 +73,5 @@ export async function GET(request: NextRequest) {
     subtasks: subtaskMap.get(r.id) || [],
   }));
 
-  return Response.json({ rows, lastRow });
+  return Response.json({ rows, lastRow: rows.length });
 }

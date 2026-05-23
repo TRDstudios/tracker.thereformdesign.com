@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { tasks, projects, users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { EditTaskForm } from "./edit-form";
 import { sql } from "drizzle-orm";
 
@@ -14,7 +14,14 @@ export default async function EditTaskPage(props: {
 
   const { id } = await props.params;
 
-  const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+  const [task] = await db
+    .select()
+    .from(tasks)
+    .where(
+      id.startsWith("TASK-")
+        ? eq(tasks.displayId, id)
+        : or(eq(tasks.displayId, id), eq(tasks.id, id)),
+    );
   if (!task) redirect("/tasks");
 
   const allProjects = await db

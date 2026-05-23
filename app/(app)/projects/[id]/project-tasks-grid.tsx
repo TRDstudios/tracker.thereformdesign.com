@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, ICellRendererParams, IDatasource } from "ag-grid-community";
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import {
   ModuleRegistry,
-  InfiniteRowModelModule,
+  ClientSideRowModelModule,
   TextFilterModule,
   ColumnAutoSizeModule,
   ValidationModule,
@@ -18,14 +18,17 @@ import { TaskEditPanel } from "@/app/(app)/tasks/task-edit-panel";
 import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
-  InfiniteRowModelModule,
+  ClientSideRowModelModule,
   TextFilterModule,
   ColumnAutoSizeModule,
   ValidationModule,
 ]);
 
+const textFilterParams = { filterOptions: ["contains"] };
+
 interface TaskRowData {
   id: string;
+  displayId: string;
   title: string;
   description: string | null;
   status: string;
@@ -86,20 +89,36 @@ export function ProjectTasksGrid({
 }) {
   const router = useRouter();
   const gridRef = useRef<AgGridReact>(null);
+  const [rowData, setRowData] = useState<TaskRowData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingTask, setEditingTask] = useState<TaskRowData | null>(null);
 
-  useEffect(() => {
-    gridRef.current?.api?.refreshInfiniteCache();
-  }, [refreshTrigger]);
-
   const ctx: GridContext = useMemo(() => ({ onEdit: setEditingTask }), []);
+
+  const loadData = useCallback(async (showLoading?: boolean) => {
+    if (showLoading) setLoading(true);
+    try {
+      const res = await fetch(`/api/tasks?projectId=${projectId}`);
+      const data = await res.json();
+      setRowData(data.rows);
+    } catch {
+      toast.error("Failed to load tasks");
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadData(); }, [loadData]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { if (refreshTrigger) loadData(true); }, [refreshTrigger, loadData]);
 
   const handleDelete = async (taskId: string) => {
     if (!confirm("Delete this task?")) return;
     try {
       await deleteTask(taskId);
       toast.success("Task deleted");
-      gridRef.current?.api?.refreshInfiniteCache();
+      loadData();
     } catch {
       toast.error("Failed to delete task");
     }
@@ -107,11 +126,23 @@ export function ProjectTasksGrid({
 
   const colDefs = useMemo<ColDef[]>(() => [
     {
+      field: "displayId",
+      headerName: "ID",
+      width: 110,
+      filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
+      floatingFilter: true,
+      cellRenderer: (params: ICellRendererParams) => (
+        <span className="font-mono text-xs font-semibold text-[#a1a1a1]">{params.value || ""}</span>
+      ),
+    },
+    {
       field: "title",
       headerName: "Task",
       flex: 2,
       minWidth: 200,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         const st = params.data?.subtasks as { id: string; title: string }[] | undefined;
@@ -143,6 +174,7 @@ export function ProjectTasksGrid({
       headerName: "Status",
       width: 130,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         const value = params.value as string;
@@ -159,6 +191,7 @@ export function ProjectTasksGrid({
       headerName: "Priority",
       width: 110,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => {
         const value = params.value as string;
@@ -175,6 +208,7 @@ export function ProjectTasksGrid({
       headerName: "Assignee",
       width: 150,
       filter: "agTextColumnFilter",
+      filterParams: textFilterParams,
       floatingFilter: true,
       cellRenderer: (params: ICellRendererParams) => (
         <span className="text-[#1d1d1d]/70">{params.value || "—"}</span>
@@ -201,7 +235,7 @@ export function ProjectTasksGrid({
         return (
           <div className="flex items-center gap-1">
             <button
-              onClick={(e) => { e.stopPropagation(); router.push(`/tasks/${params.data.id}`); }}
+              onClick={(e) => { e.stopPropagation(); router.push(`/tasks/${params.data.displayId || params.data.id}`); }}
               className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[#a1a1a1] transition-colors hover:bg-[#f5f5f4] hover:text-[#1d1d1d]"
               title="View"
             >
@@ -230,30 +264,8 @@ export function ProjectTasksGrid({
   const defaultColDef = useMemo(() => ({
     sortable: true,
     resizable: true,
-    suppressHeaderMenuButton: false,
-    suppressHeaderFilterButton: false,
+    suppressHeaderMenuButton: true,
   }), []);
-
-  const dataSource = useMemo<IDatasource>(() => ({
-    getRows: (params) => {
-      const queryParams = new URLSearchParams({
-        startRow: String(params.startRow),
-        endRow: String(params.endRow),
-        sortModel: JSON.stringify(params.sortModel),
-        filterModel: JSON.stringify(params.filterModel),
-        projectId,
-      });
-
-      fetch(`/api/tasks?${queryParams}`)
-        .then((res) => res.json())
-        .then((data) => {
-          params.successCallback(data.rows, data.lastRow);
-        })
-        .catch(() => {
-          params.failCallback();
-        });
-    },
-  }), [projectId]);
 
   return (
     <>
@@ -262,23 +274,20 @@ export function ProjectTasksGrid({
           ref={gridRef}
           columnDefs={colDefs}
           defaultColDef={defaultColDef}
-          rowModelType="infinite"
-          datasource={dataSource}
+          rowData={rowData}
+          rowModelType="clientSide"
+          loading={loading}
+          loadingOverlayComponent={GridLoadingOverlay}
           context={ctx}
           animateRows={true}
           rowHeight={56}
           headerHeight={44}
           floatingFiltersHeight={36}
-          cacheBlockSize={50}
-          maxBlocksInCache={5}
-          loadingOverlayComponent={GridLoadingOverlay}
-          suppressNoRowsOverlay={true}
-          suppressPaginationPanel={true}
         />
       </div>
       <TaskEditPanel
         open={!!editingTask}
-        onClose={() => { setEditingTask(null); gridRef.current?.api?.refreshInfiniteCache(); }}
+        onClose={() => { setEditingTask(null); loadData(); }}
         task={editingTask}
         projects={projects}
         users={users}
