@@ -29,10 +29,8 @@ interface UserOption {
 
 export function ProjectForm({
   onSuccess,
-  users,
 }: {
   onSuccess?: () => void;
-  users?: UserOption[];
 }) {
   const router = useRouter();
   const [stack, setStack] = useState<string[]>([]);
@@ -40,13 +38,11 @@ export function ProjectForm({
   const [newFeature, setNewFeature] = useState("");
   const [newStack, setNewStack] = useState("");
   const [showCustomStack, setShowCustomStack] = useState(false);
-  const [memberIds, setMemberIds] = useState<string[]>([]);
 
-  const [, formAction, pending] = useActionState(
+      const [, formAction, pending] = useActionState(
     async (_prev: unknown, formData: FormData) => {
       formData.set("stack", JSON.stringify(stack));
       formData.set("features", JSON.stringify(features));
-      formData.set("memberIds", JSON.stringify(memberIds));
       const result = await createProject(formData);
       if (result?.id) {
         if (onSuccess) {
@@ -91,9 +87,7 @@ export function ProjectForm({
     setFeatures((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const toggleMember = (id: string) => {
-    setMemberIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
-  };
+  
 
   return (
     <form action={formAction} className="space-y-5">
@@ -179,26 +173,7 @@ export function ProjectForm({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-[#1d1d1d]">Access Users</Label>
-        <div className="max-h-32 overflow-y-auto rounded-lg border border-[#e5e5e5] p-2">
-          {users?.map((u) => (
-            <label
-              key={u.id}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[#f5f5f4]"
-            >
-              <input
-                type="checkbox"
-                checked={memberIds.includes(u.id)}
-                onChange={() => toggleMember(u.id)}
-                className="h-4 w-4 accent-[#f5eb10]"
-              />
-              <span className="text-[#1d1d1d]">{u.name}</span>
-              <span className="text-xs text-[#a1a1a1]">({u.email})</span>
-            </label>
-          ))}
-        </div>
-      </div>
+      {/* Access Users removed: projects are visible to all authenticated users by default */}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

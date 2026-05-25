@@ -9,13 +9,7 @@ export async function GET() {
     return Response.json({ rows: [], lastRow: 0 });
   }
 
-  const isAdmin = session.user.role === "super_admin" || session.user.role === "admin";
-
-  const conditions = [];
-
-  if (!isAdmin) {
-    conditions.push(eq(projects.ownerId, session.user.id));
-  }
+  // All authenticated users should see all projects; no owner-only filter.
 
   const data = await db
     .select({
@@ -35,7 +29,6 @@ export async function GET() {
     })
     .from(projects)
     .leftJoin(users, eq(projects.ownerId, users.id))
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(projects.createdAt));
 
   const rows = data.map((r) => ({

@@ -52,7 +52,6 @@ export const createProjectSchema = z.object({
   features: z.array(featureSchema).optional(),
   serverDetails: z.string().max(200).nullable().optional(),
   domainDetails: z.string().max(200).nullable().optional(),
-  memberIds: z.array(z.string().uuid()).optional(),
 });
 
 export const updateProjectSchema = z.object({

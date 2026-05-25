@@ -14,10 +14,8 @@ interface UserOption {
 
 export function ProjectCreatePanel({
   onSuccess: externalOnSuccess,
-  users = [],
 }: {
   onSuccess?: () => void;
-  users?: UserOption[];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -31,7 +29,7 @@ export function ProjectCreatePanel({
       </Button>
 
       <SlidePanel open={open} onClose={() => setOpen(false)} title="Create Project">
-        <ProjectForm users={users} onSuccess={() => { setOpen(false); externalOnSuccess?.(); }} />
+        <ProjectForm onSuccess={() => { setOpen(false); externalOnSuccess?.(); }} />
       </SlidePanel>
     </>
   );

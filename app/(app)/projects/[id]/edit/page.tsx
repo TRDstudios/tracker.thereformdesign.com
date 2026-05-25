@@ -19,6 +19,8 @@ export default async function EditProjectPage(props: {
     .where(eq(projects.id, id));
   if (!project) redirect("/projects");
 
+  // member/user lists removed — projects are visible to all authenticated users by default
+
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <div>

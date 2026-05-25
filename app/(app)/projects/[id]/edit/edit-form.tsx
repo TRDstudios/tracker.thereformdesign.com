@@ -21,6 +21,12 @@ const STACK_OPTIONS = [
 const SERVER_OPTIONS = ["Godaddy", "Hostinger", "AWS", "Vercel", "Netlify", "DigitalOcean", "Linode", "Other"];
 const DOMAIN_OPTIONS = ["Godaddy", "Hostinger", "Namecheap", "Cloudflare", "Google Domains", "Other"];
 
+interface UserOption {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface Project {
   id: string;
   name: string;
@@ -34,15 +40,17 @@ interface Project {
   domainDetails: string | null;
 }
 
-export function EditProjectForm({ project }: { project: Project }) {
+export function EditProjectForm({ project }: { project: Project; }) {
   const router = useRouter();
-  const [stack, setStack] = useState<string[]>(project.stack ?? []);
+  const [stack, setStack] = useState<string[]>(
+    Array.isArray(project.stack) ? project.stack : [],
+  );
   const [features, setFeatures] = useState<{ name: string; completed: boolean }[]>(project.features ?? []);
   const [newFeature, setNewFeature] = useState("");
   const [newStack, setNewStack] = useState("");
   const [showCustomStack, setShowCustomStack] = useState(false);
 
-  const [, formAction, pending] = useActionState(
+      const [, formAction, pending] = useActionState(
     async (_prev: unknown, formData: FormData) => {
       formData.set("stack", JSON.stringify(stack));
       formData.set("features", JSON.stringify(features));
@@ -52,6 +60,7 @@ export function EditProjectForm({ project }: { project: Project }) {
     },
     null,
   );
+
 
   const toggleStack = (s: string) => {
     setStack((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
@@ -182,6 +191,8 @@ export function EditProjectForm({ project }: { project: Project }) {
           )}
         </div>
       </div>
+
+      {/* Access Users removed: projects are visible to all authenticated users by default */}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

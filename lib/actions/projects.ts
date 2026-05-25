@@ -27,7 +27,6 @@ export async function createProject(formData: FormData) {
     ...raw,
     stack: raw.stack ? JSON.parse(raw.stack as string) : undefined,
     features: raw.features ? JSON.parse(raw.features as string) : undefined,
-    memberIds: raw.memberIds ? JSON.parse(raw.memberIds as string) : undefined,
   });
 
   const [project] = await db
@@ -51,15 +50,6 @@ export async function createProject(formData: FormData) {
     role: "admin",
   });
 
-  if (parsed.memberIds?.length) {
-    await db.insert(projectMembers).values(
-      parsed.memberIds.map((uid) => ({
-        projectId: project.id,
-        userId: uid,
-        role: "member" as const,
-      })),
-    ).onConflictDoNothing();
-  }
 
   await db.insert(activityLogs).values({
     userId: session.user.id,

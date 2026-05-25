@@ -27,6 +27,15 @@ ModuleRegistry.registerModules([
 
 const textFilterParams = { filterOptions: ["contains"] };
 
+const stackColors: Record<string, string> = {
+  "HTML static Version": "bg-orange-100 text-orange-700",
+  Wordpress: "bg-blue-100 text-blue-700",
+  React: "bg-cyan-100 text-cyan-700",
+  "Next Js": "bg-zinc-100 text-zinc-700",
+  "Node js": "bg-green-100 text-green-700",
+  Woocommerce: "bg-purple-100 text-purple-700",
+};
+
 interface ProjectRowData {
   id: string;
   name: string;
@@ -149,11 +158,14 @@ export function AgGridProjects({
         if (!params.value?.length) return <span className="text-sm text-[#a1a1a1]">—</span>;
         return (
           <div className="flex flex-wrap gap-1 py-1">
-            {(params.value as string[]).map((s: string) => (
-              <span key={s} className="rounded-md bg-[#f5f5f4] px-2 py-0.5 text-[10px] font-medium text-[#1d1d1d]/70">
-                {s}
-              </span>
-            ))}
+            {(params.value as string[]).map((s: string) => {
+              const color = stackColors[s] || "bg-zinc-100 text-zinc-600";
+              return (
+                <span key={s} className={`rounded-md px-2 py-0.5 text-[10px] font-medium ${color}`}>
+                  {s}
+                </span>
+              );
+            })}
           </div>
         );
       },
