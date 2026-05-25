@@ -223,6 +223,7 @@ export function AgGridTasks({
       width: 120,
       sortable: false,
       filter: false,
+      pinned: "right",
       cellRenderer: (params: ICellRendererParams) => {
         if (!params.data) return null;
         return (
