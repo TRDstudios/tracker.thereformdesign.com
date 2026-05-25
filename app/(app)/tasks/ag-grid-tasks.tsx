@@ -25,6 +25,7 @@ import {
 } from "./ag-grid-cell-renderers";
 import { StatusDropdown } from "./ag-grid-status-dropdown";
 import { TaskEditPanel } from "./task-edit-panel";
+import { CommentsPopover } from "@/components/ui/comments-popover";
 import { toast } from "sonner";
 import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
@@ -64,6 +65,7 @@ export function AgGridTasks({
     rect: DOMRect;
   } | null>(null);
   const [editingTask, setEditingTask] = useState<TaskRowData | null>(null);
+  const [commentTaskId, setCommentTaskId] = useState<string | null>(null);
 
   const ctx: GridContext = useMemo(() => ({ setStatusTarget, onEdit: setEditingTask }), []);
 
@@ -103,6 +105,30 @@ export function AgGridTasks({
       cellRenderer: (params: ICellRendererParams) => (
         <span className="font-mono text-xs font-semibold text-[#a1a1a1]">{params.value || ""}</span>
       ),
+    },
+    {
+      field: "commentCount",
+      headerName: "",
+      width: 50,
+      sortable: false,
+      filter: false,
+      cellRenderer: (params: ICellRendererParams) => {
+        const count = params.value as number;
+        if (!count) return null;
+        const taskId = params.data?.id as string;
+        return (
+          <button
+            onClick={(e) => { e.stopPropagation(); setCommentTaskId(taskId); }}
+            className="flex cursor-pointer items-center gap-1 text-xs text-[#a1a1a1] transition-colors hover:text-[#1d1d1d]"
+            title={`${count} comment${count > 1 ? "s" : ""}`}
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            {count}
+          </button>
+        );
+      },
     },
     {
       field: "projectName",
@@ -289,6 +315,12 @@ export function AgGridTasks({
         projects={projects}
         users={users}
       />
+      {commentTaskId && (
+        <CommentsPopover
+          taskId={commentTaskId}
+          onClose={() => setCommentTaskId(null)}
+        />
+      )}
     </>
   );
 }

@@ -5,8 +5,6 @@ import { updateTaskStatus } from "@/lib/actions/tasks";
 import { toast } from "sonner";
 
 const statuses = [
-  { value: "todo", label: "To Do" },
-  { value: "in_progress", label: "In Progress" },
   { value: "review", label: "Review" },
   { value: "done", label: "Done" },
 ];

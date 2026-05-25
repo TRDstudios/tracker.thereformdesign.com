@@ -15,9 +15,9 @@ export const statusStyles: Record<string, string> = {
 };
 
 export const priorityStyles: Record<string, string> = {
-  low: "bg-zinc-100 text-zinc-600",
-  medium: "bg-amber-100 text-amber-700",
-  high: "bg-red-100 text-red-700",
+  low: "bg-blue-50 text-blue-600 border-blue-200",
+  medium: "bg-amber-50 text-amber-700 border-amber-200",
+  high: "bg-red-50 text-red-700 border-red-200",
 };
 
 export interface TaskRow {
@@ -30,6 +30,7 @@ export interface TaskRow {
   assigneeName: string;
   dueDate: string | null;
   createdAt: string;
+  commentCount: number;
 }
 
 export interface TaskRowData {
@@ -46,6 +47,7 @@ export interface TaskRowData {
   dueDate: string | null;
   createdAt: string;
   subtasks?: { id: string; title: string }[];
+  commentCount: number;
 }
 
 export interface GridContext {

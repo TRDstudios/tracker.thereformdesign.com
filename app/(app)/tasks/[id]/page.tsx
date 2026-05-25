@@ -12,7 +12,7 @@ import {
 import { eq, desc, and, gte, or } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, ListTodo } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { StatusButtons } from "./status-buttons";
 import { CommentForm } from "./comment-form";
 import { DeleteTaskButton } from "./delete-task-button";
@@ -78,46 +78,46 @@ export default async function TaskDetailPage(props: {
     .orderBy(desc(activityLogs.createdAt));
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f5eb10]/20">
-          <ListTodo className="h-6 w-6 text-[#1d1d1d]" />
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="flex items-center gap-3">
+        {task.displayId && (
+          <span className="rounded-md bg-[#f5eb10]/20 px-2 py-0.5 font-mono text-xs font-semibold text-[#1d1d1d]">
+            {task.displayId}
+          </span>
+        )}
+        <Badge variant={priorityBadge[task.priority]} className="rounded-md text-xs">
+          {task.priority}
+        </Badge>
+        <span
+          className={`rounded-md px-2 py-0.5 text-xs font-medium ${statusColors[task.status]}`}
+        >
+          {statusLabels[task.status]}
+        </span>
+      </div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-xl font-bold tracking-tight text-[#1d1d1d]">
+            {task.title}
+          </h1>
+          <p className="mt-1 text-sm text-[#1d1d1d]/50">
+            {project?.name && `${project.name} · `}
+            Created by {userNames.get(task.creatorId) || "Unknown"}
+            {task.assigneeId && ` · Assigned to ${userNames.get(task.assigneeId) || "Unknown"}`}
+            {task.dueDate &&
+              ` · Due ${new Date(task.dueDate).toLocaleDateString()}`}
+          </p>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1d]">
-              {task.displayId && <span className="text-[#a1a1a1]">{task.displayId} — </span>}{task.title}
-            </h1>
-            <Badge variant={priorityBadge[task.priority]} className="rounded-md">
-              {task.priority}
-            </Badge>
-            <span
-              className={`rounded-md px-2 py-0.5 text-xs font-medium ${statusColors[task.status]}`}
+        <div className="flex items-center gap-2 shrink-0">
+          <Link href={`/tasks/${task.displayId || task.id}/edit`}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-lg border-[#e5e5e5]"
             >
-              {statusLabels[task.status]}
-            </span>
-          </div>
-          <div className="mt-2 flex items-center justify-between gap-4">
-            <p className="text-sm text-[#1d1d1d]/50">
-              {project?.name && `${project.name} · `}
-              Created by {userNames.get(task.creatorId) || "Unknown"}
-              {task.assigneeId && ` · Assigned to ${userNames.get(task.assigneeId) || "Unknown"}`}
-              {task.dueDate &&
-                ` · Due ${new Date(task.dueDate).toLocaleDateString()}`}
-            </p>
-            <div className="flex items-center gap-2 shrink-0">
-              <Link href={`/tasks/${task.displayId || task.id}/edit`}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-lg border-[#e5e5e5]"
-                >
-                  <Pencil className="mr-1 h-4 w-4" /> Edit
-                </Button>
-              </Link>
-              <DeleteTaskButton taskId={task.id} />
-            </div>
-          </div>
+              <Pencil className="mr-1 h-4 w-4" /> Edit
+            </Button>
+          </Link>
+          <DeleteTaskButton taskId={task.id} />
         </div>
       </div>
 
@@ -135,22 +135,40 @@ export default async function TaskDetailPage(props: {
         <h3 className="text-sm font-semibold text-[#1d1d1d]">
           Activity
         </h3>
-        <div className="mt-5 space-y-4">
-          {taskComments.map((comment) => (
-            <div key={comment.id} className="space-y-1">
-              <p className="text-xs font-medium text-[#f5eb10]">
-                {userNames.get(comment.authorId) || "Unknown"}
-              </p>
-              <p className="text-sm text-[#1d1d1d]/80">{comment.content}</p>
-            </div>
-          ))}
+        <div className="mt-5 space-y-5">
+          {taskComments.map((comment) => {
+            const name = userNames.get(comment.authorId) || "Unknown";
+            const initial = name.charAt(0).toUpperCase();
+            return (
+              <div key={comment.id} className="flex gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5eb10]/30 text-xs font-bold text-[#1d1d1d]">
+                  {initial}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-[#1d1d1d]">{name}</p>
+                  <p className="mt-0.5 text-sm text-[#1d1d1d]/70">{comment.content}</p>
+                </div>
+              </div>
+            );
+          })}
           <div className="border-t border-[#e5e5e5]" />
-          {logs.map((log) => (
-            <p key={log.id} className="text-xs text-[#1d1d1d]/40">
-              {userNames.get(log.userId) || "Someone"}{" "}
-              {log.action.replace(/_/g, " ")}
-            </p>
-          ))}
+          {logs.map((log) => {
+            const name = userNames.get(log.userId) || "Someone";
+            const initial = name.charAt(0).toUpperCase();
+            return (
+              <div key={log.id} className="flex gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e5e5e5] text-xs font-bold text-[#a1a1a1]">
+                  {initial}
+                </div>
+                <div className="min-w-0 flex-1 pt-1">
+                  <p className="text-xs text-[#a1a1a1]">
+                    <span className="font-medium text-[#1d1d1d]">{name}</span>{" "}
+                    {log.action.replace(/_/g, " ")}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
           <div className="border-t border-[#e5e5e5]" />
           <CommentForm taskId={task.id} />
         </div>

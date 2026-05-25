@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { tasks, projects, users } from "@/lib/db/schema";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { tasks, projects, users, comments } from "@/lib/db/schema";
+import { eq, desc, and, inArray, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
@@ -64,6 +64,16 @@ export async function GET(request: NextRequest) {
     subtaskMap.set(st.parentId!, list);
   }
 
+  const commentCounts = taskIds.length > 0
+    ? await db
+        .select({ taskId: comments.taskId, count: sql<number>`count(*)::int` })
+        .from(comments)
+        .where(inArray(comments.taskId, taskIds))
+        .groupBy(comments.taskId)
+    : [];
+
+  const commentCountMap = new Map(commentCounts.map((c) => [c.taskId, c.count]));
+
   const rows = data.map((r) => ({
     ...r,
     dueDate: r.dueDate ? r.dueDate.toISOString() : null,
@@ -71,6 +81,7 @@ export async function GET(request: NextRequest) {
     projectName: r.projectName ?? "",
     assigneeName: r.assigneeName ?? "",
     subtasks: subtaskMap.get(r.id) || [],
+    commentCount: commentCountMap.get(r.id) || 0,
   }));
 
   return Response.json({ rows, lastRow: rows.length });

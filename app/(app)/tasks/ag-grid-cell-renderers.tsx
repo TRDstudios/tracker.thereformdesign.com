@@ -35,7 +35,7 @@ export function PriorityCellRenderer(params: ICellRendererParams) {
   const value = params.value as string;
   if (!value) return null;
   return (
-    <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold ${priorityStyles[value] || ""}`}>
+    <span className={`inline-block rounded-lg border px-2.5 py-1 text-xs font-semibold ${priorityStyles[value] || ""}`}>
       {value}
     </span>
   );

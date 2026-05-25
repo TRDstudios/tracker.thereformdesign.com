@@ -15,6 +15,7 @@ import { Eye, Pencil, Trash2, ListTodo } from "lucide-react";
 import { deleteTask } from "@/lib/actions/tasks";
 import { toast } from "sonner";
 import { TaskEditPanel } from "@/app/(app)/tasks/task-edit-panel";
+import { CommentsPopover } from "@/components/ui/comments-popover";
 import { GridLoadingOverlay } from "@/components/ui/grid-loading-overlay";
 
 ModuleRegistry.registerModules([
@@ -39,6 +40,7 @@ interface TaskRowData {
   assigneeName: string;
   dueDate: string | null;
   createdAt: string;
+  commentCount: number;
 }
 
 const statusLabels: Record<string, string> = {
@@ -56,9 +58,9 @@ const statusStyles: Record<string, string> = {
 };
 
 const priorityStyles: Record<string, string> = {
-  low: "bg-[#f0fdf4] text-[#16a34a]",
-  medium: "bg-[#fef3c7] text-[#d97706]",
-  high: "bg-[#fef2f2] text-[#dc2626]",
+  low: "bg-blue-50 text-blue-600 border-blue-200",
+  medium: "bg-amber-50 text-amber-700 border-amber-200",
+  high: "bg-red-50 text-red-700 border-red-200",
 };
 
 interface UserOption {
@@ -92,6 +94,7 @@ export function ProjectTasksGrid({
   const [rowData, setRowData] = useState<TaskRowData[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingTask, setEditingTask] = useState<TaskRowData | null>(null);
+  const [commentTaskId, setCommentTaskId] = useState<string | null>(null);
 
   const ctx: GridContext = useMemo(() => ({ onEdit: setEditingTask }), []);
 
@@ -135,6 +138,30 @@ export function ProjectTasksGrid({
       cellRenderer: (params: ICellRendererParams) => (
         <span className="font-mono text-xs font-semibold text-[#a1a1a1]">{params.value || ""}</span>
       ),
+    },
+    {
+      field: "commentCount",
+      headerName: "",
+      width: 50,
+      sortable: false,
+      filter: false,
+      cellRenderer: (params: ICellRendererParams) => {
+        const count = params.value as number;
+        if (!count) return null;
+        const taskId = params.data?.id as string;
+        return (
+          <button
+            onClick={(e) => { e.stopPropagation(); setCommentTaskId(taskId); }}
+            className="flex cursor-pointer items-center gap-1 text-xs text-[#a1a1a1] transition-colors hover:text-[#1d1d1d]"
+            title={`${count} comment${count > 1 ? "s" : ""}`}
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            {count}
+          </button>
+        );
+      },
     },
     {
       field: "title",
@@ -197,7 +224,7 @@ export function ProjectTasksGrid({
         const value = params.value as string;
         if (!value) return null;
         return (
-          <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold ${priorityStyles[value] || ""}`}>
+          <span className={`inline-block rounded-lg border px-2.5 py-1 text-xs font-semibold ${priorityStyles[value] || ""}`}>
             {value}
           </span>
         );
@@ -292,6 +319,12 @@ export function ProjectTasksGrid({
         projects={projects}
         users={users}
       />
+      {commentTaskId && (
+        <CommentsPopover
+          taskId={commentTaskId}
+          onClose={() => setCommentTaskId(null)}
+        />
+      )}
     </>
   );
 }
