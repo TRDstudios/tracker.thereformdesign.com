@@ -37,6 +37,7 @@ export const getPerPersonStats = cache(async () => {
   const rows = await db
     .select({
       name: users.name,
+      role: users.role,
       profession: users.profession,
       total: sql<number>`count(${tasks.id})`,
       completed: sql<number>`count(*) filter (where ${tasks.status} = 'done')`,
@@ -44,7 +45,7 @@ export const getPerPersonStats = cache(async () => {
     })
     .from(users)
     .leftJoin(tasks, eq(tasks.assigneeId, users.id))
-    .groupBy(users.id, users.name, users.profession)
+    .groupBy(users.id, users.name, users.role, users.profession)
     .orderBy(users.name);
   return rows;
 });

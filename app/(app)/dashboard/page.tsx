@@ -67,6 +67,7 @@ export default async function DashboardPage() {
                 <tr className="border-b border-[#e5e5e5] bg-[#fafaf9]">
                   <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#1d1d1d]/60">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#1d1d1d]/60">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#1d1d1d]/60">Profession</th>
                   <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#22c55e]">Completed</th>
                   <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#f97316]">Pending</th>
                   <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#1d1d1d]/60">Total</th>
@@ -76,7 +77,8 @@ export default async function DashboardPage() {
                 {personStats.map((person) => (
                   <tr key={person.name} className="hover:bg-[#fafaf9] transition-colors">
                     <td className="px-6 py-3 font-medium text-[#1d1d1d]">{person.name}</td>
-                    <td className="px-6 py-3 text-[#1d1d1d]/60 capitalize">{person.profession || "—"}</td>
+                    <td className="px-6 py-3 text-[#1d1d1d]/60 capitalize">{person.role?.replace("_", " ") || "—"}</td>
+                    <td className="px-6 py-3 text-[#1d1d1d]/60">{person.profession || "—"}</td>
                     <td className="px-6 py-3 text-center">
                       <span className="inline-flex items-center gap-1 rounded-full bg-[#22c55e]/10 px-2.5 py-0.5 text-xs font-semibold text-[#22c55e]">
                         {person.completed}
