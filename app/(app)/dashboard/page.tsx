@@ -73,26 +73,23 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e5e5e5]">
-                {personStats.map((person) => {
-                  const total = person.completed + person.pending;
-                  return (
-                    <tr key={person.name} className="hover:bg-[#fafaf9] transition-colors">
-                      <td className="px-6 py-3 font-medium text-[#1d1d1d]">{person.name}</td>
-                      <td className="px-6 py-3 text-[#1d1d1d]/60 capitalize">{person.profession || "—"}</td>
-                      <td className="px-6 py-3 text-center">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#22c55e]/10 px-2.5 py-0.5 text-xs font-semibold text-[#22c55e]">
-                          {person.completed}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3 text-center">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#f97316]/10 px-2.5 py-0.5 text-xs font-semibold text-[#f97316]">
-                          {person.pending}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3 text-center font-medium text-[#1d1d1d]">{total}</td>
-                    </tr>
-                  );
-                })}
+                {personStats.map((person) => (
+                  <tr key={person.name} className="hover:bg-[#fafaf9] transition-colors">
+                    <td className="px-6 py-3 font-medium text-[#1d1d1d]">{person.name}</td>
+                    <td className="px-6 py-3 text-[#1d1d1d]/60 capitalize">{person.profession || "—"}</td>
+                    <td className="px-6 py-3 text-center">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#22c55e]/10 px-2.5 py-0.5 text-xs font-semibold text-[#22c55e]">
+                        {person.completed}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#f97316]/10 px-2.5 py-0.5 text-xs font-semibold text-[#f97316]">
+                        {person.pending}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-center font-medium text-[#1d1d1d]">{person.total}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

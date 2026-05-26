@@ -38,8 +38,9 @@ export const getPerPersonStats = cache(async () => {
     .select({
       name: users.name,
       profession: users.profession,
+      total: sql<number>`count(${tasks.id})`,
       completed: sql<number>`count(*) filter (where ${tasks.status} = 'done')`,
-      pending: sql<number>`count(*) filter (where ${tasks.status} != 'done' or ${tasks.status} is null)`,
+      pending: sql<number>`count(*) filter (where ${tasks.status} IS NOT NULL AND ${tasks.status} != 'done')`,
     })
     .from(users)
     .leftJoin(tasks, eq(tasks.assigneeId, users.id))
