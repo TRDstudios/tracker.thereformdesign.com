@@ -10,11 +10,12 @@ export default async function ProjectsPage() {
   if (!session?.user) redirect("/login");
 
   const isAdmin = session.user.role === "super_admin" || session.user.role === "admin";
+  const isSuperAdmin = session.user.role === "super_admin";
 
   return (
     <>
       <PageTitleSetter title="Projects" />
-      <ProjectsPageClient isAdmin={isAdmin} />
+      <ProjectsPageClient isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
     </>
   );
 }

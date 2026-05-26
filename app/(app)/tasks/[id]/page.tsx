@@ -117,7 +117,9 @@ export default async function TaskDetailPage(props: {
               <Pencil className="mr-1 h-4 w-4" /> Edit
             </Button>
           </Link>
-          <DeleteTaskButton taskId={task.id} />
+          {session.user.role === "super_admin" && (
+            <DeleteTaskButton taskId={task.id} />
+          )}
         </div>
       </div>
 

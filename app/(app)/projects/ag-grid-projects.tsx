@@ -58,9 +58,11 @@ interface GridContext {
 
 export function AgGridProjects({
   isAdmin,
+  isSuperAdmin,
   refreshTrigger = 0,
 }: {
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   refreshTrigger?: number;
 }) {
   const router = useRouter();
@@ -211,14 +213,14 @@ export function AgGridProjects({
               <Pencil className="h-4 w-4" />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); if (isAdmin) handleDelete(params.data.id); }}
+              onClick={(e) => { e.stopPropagation(); if (isSuperAdmin) handleDelete(params.data.id); }}
               className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors ${
-                isAdmin
+                isSuperAdmin
                   ? "text-[#a1a1a1] hover:bg-red-50 hover:text-red-500"
                   : "text-[#e5e5e5] cursor-not-allowed"
               }`}
               title="Delete"
-              disabled={!isAdmin}
+              disabled={!isSuperAdmin}
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -226,7 +228,7 @@ export function AgGridProjects({
         );
       },
     },
-  ], [isAdmin, handleDelete]);
+  ], [isAdmin, isSuperAdmin, handleDelete]);
 
   const defaultColDef = useMemo(() => ({
     sortable: true,

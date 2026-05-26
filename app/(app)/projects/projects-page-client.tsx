@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AgGridProjects } from "./ag-grid-projects";
 import { ProjectCreatePanel } from "./project-create-panel";
 
-export function ProjectsPageClient({ isAdmin }: { isAdmin: boolean }) {
+export function ProjectsPageClient({ isAdmin, isSuperAdmin }: { isAdmin: boolean; isSuperAdmin: boolean }) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   return (
@@ -14,6 +14,7 @@ export function ProjectsPageClient({ isAdmin }: { isAdmin: boolean }) {
       </div>
       <AgGridProjects
         isAdmin={isAdmin}
+        isSuperAdmin={isSuperAdmin}
         refreshTrigger={refreshTrigger}
       />
     </>

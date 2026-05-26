@@ -177,7 +177,7 @@ export async function updateTask(id: string, formData: FormData) {
 
 export async function deleteTask(id: string) {
   const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  if (!session?.user || session.user.role !== "super_admin") throw new Error("Unauthorized");
   await checkRateLimit("deleteTask");
 
   await db.update(tasks).set({ parentId: null }).where(eq(tasks.parentId, id));

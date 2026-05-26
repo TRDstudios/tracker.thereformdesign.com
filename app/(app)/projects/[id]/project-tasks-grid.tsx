@@ -83,10 +83,12 @@ export function ProjectTasksGrid({
   projects,
   users,
   refreshTrigger = 0,
+  isSuperAdmin = false,
 }: {
   projectId: string;
   projects?: ProjectOption[];
   users?: UserOption[];
+  isSuperAdmin?: boolean;
   refreshTrigger?: number;
 }) {
   const router = useRouter();
@@ -277,9 +279,14 @@ export function ProjectTasksGrid({
               <Pencil className="h-4 w-4" />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); handleDelete(params.data.id); }}
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-[#a1a1a1] transition-colors hover:bg-red-50 hover:text-red-500"
+              onClick={(e) => { e.stopPropagation(); if (isSuperAdmin) handleDelete(params.data.id); }}
+              className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors ${
+                isSuperAdmin
+                  ? "text-[#a1a1a1] hover:bg-red-50 hover:text-red-500"
+                  : "text-[#e5e5e5] cursor-not-allowed"
+              }`}
               title="Delete"
+              disabled={!isSuperAdmin}
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -287,7 +294,7 @@ export function ProjectTasksGrid({
         );
       },
     },
-  ], [handleDelete]);
+  ], [isSuperAdmin, handleDelete]);
 
   const defaultColDef = useMemo(() => ({
     sortable: true,

@@ -103,7 +103,7 @@ export async function updateProject(id: string, formData: FormData) {
 
 export async function deleteProject(id: string) {
   const session = await auth();
-  if (!session?.user || session.user.role === "user") {
+  if (!session?.user || session.user.role !== "super_admin") {
     throw new Error("Unauthorized");
   }
   await checkRateLimit("deleteProject");

@@ -21,10 +21,12 @@ export function ProjectDetailClient({
   projectId,
   projects,
   users,
+  isSuperAdmin,
 }: {
   projectId: string;
   projects: ProjectOption[];
   users: UserOption[];
+  isSuperAdmin: boolean;
 }) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -50,6 +52,7 @@ export function ProjectDetailClient({
         projects={projects}
         users={users}
         refreshTrigger={refreshTrigger}
+        isSuperAdmin={isSuperAdmin}
       />
     </>
   );

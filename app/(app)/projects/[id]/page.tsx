@@ -51,7 +51,7 @@ export default async function ProjectDetailPage(props: {
                 <Pencil className="mr-1 h-4 w-4" /> Edit
               </Button>
             </Link>
-            {session.user.role !== "user" && (
+            {session.user.role === "super_admin" && (
               <DeleteProjectButton projectId={project.id} />
             )}
           </div>
@@ -146,6 +146,7 @@ export default async function ProjectDetailPage(props: {
           projectId={id}
           projects={allProjects}
           users={allUsers}
+          isSuperAdmin={session.user.role === "super_admin"}
         />
       </div>
     </>
