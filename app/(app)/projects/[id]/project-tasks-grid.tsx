@@ -40,6 +40,7 @@ interface TaskRowData {
   assigneeName: string;
   dueDate: string | null;
   createdAt: string;
+  subtasks?: { id: string; title: string }[];
   commentCount: number;
 }
 
@@ -321,6 +322,7 @@ export function ProjectTasksGrid({
         />
       </div>
       <TaskEditPanel
+        key={editingTask?.id}
         open={!!editingTask}
         onClose={() => { setEditingTask(null); loadData(); }}
         task={editingTask}

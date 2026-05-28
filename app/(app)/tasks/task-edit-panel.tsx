@@ -45,10 +45,9 @@ export function TaskEditPanel({
   projects?: ProjectOption[];
   users?: UserOption[];
 }) {
-  const existingSubtaskTitles = task?.subtasks?.map((s) => s.title) || [];
   const [selectedProject, setSelectedProject] = useState(task?.projectId || "");
   const [subtaskInput, setSubtaskInput] = useState("");
-  const [subtaskTitles, setSubtaskTitles] = useState<string[]>(existingSubtaskTitles);
+  const [subtaskTitles, setSubtaskTitles] = useState<string[]>(task?.subtasks?.map((s) => s.title) || []);
 
   const [, formAction, pending] = useActionState(
     async (_prev: unknown, formData: FormData) => {

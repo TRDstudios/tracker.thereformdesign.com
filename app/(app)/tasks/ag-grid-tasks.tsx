@@ -293,6 +293,7 @@ export function AgGridTasks({
         />
       )}
       <TaskEditPanel
+        key={editingTask?.id}
         open={!!editingTask}
         onClose={() => { setEditingTask(null); loadData(); }}
         task={editingTask}
