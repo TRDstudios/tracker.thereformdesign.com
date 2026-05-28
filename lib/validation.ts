@@ -22,9 +22,9 @@ export const createTaskSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
   projectId: nullableUuidSchema,
-  assigneeId: nullableUuidSchema,
+  assigneeId: uuidSchema,
   priority: prioritySchema.default("medium"),
-  dueDate: z.string().nullable().optional(),
+  dueDate: z.string().min(1, "Due date is required"),
   subtaskTitles: z.array(z.string().min(1).max(200)).optional(),
 });
 
@@ -32,9 +32,9 @@ export const updateTaskSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
   projectId: nullableUuidSchema,
-  assigneeId: nullableUuidSchema,
+  assigneeId: uuidSchema,
   priority: prioritySchema.default("medium"),
-  dueDate: z.string().nullable().optional(),
+  dueDate: z.string().min(1, "Due date is required"),
   subtaskTitles: z.array(z.string().min(1).max(200)).optional(),
 });
 

@@ -80,7 +80,7 @@ export function TaskEditPanel({
       <form action={formAction} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="title" className="text-sm font-medium text-[#1d1d1d]">
-            Task Title
+            Task Title <span className="text-red-500">*</span>
           </Label>
           <Input
             id="title"
@@ -142,12 +142,13 @@ export function TaskEditPanel({
           </div>
           <div className="space-y-2">
             <Label htmlFor="dueDate" className="text-sm font-medium text-[#1d1d1d]">
-              Due Date
+              Due Date <span className="text-red-500">*</span>
             </Label>
             <Input
               id="dueDate"
               name="dueDate"
               type="date"
+              required
               defaultValue={
                 task.dueDate
                   ? new Date(task.dueDate).toISOString().split("T")[0]
@@ -160,15 +161,16 @@ export function TaskEditPanel({
 
         <div className="space-y-2">
           <Label htmlFor="assigneeId" className="text-sm font-medium text-[#1d1d1d]">
-            Assignee
+            Assignee <span className="text-red-500">*</span>
           </Label>
           <select
             id="assigneeId"
             name="assigneeId"
+            required
             defaultValue={task.assigneeId || ""}
             className="flex h-10 w-full rounded-lg border border-[#e5e5e5] bg-white px-3 py-1 text-sm text-[#1d1d1d] transition-colors focus:border-[#f5eb10] focus:ring-[#f5eb10] focus-visible:outline-none focus-visible:ring-1"
           >
-            <option value="">Unassigned</option>
+            <option value="" disabled>Select assignee</option>
             {users.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.name} ({u.email})

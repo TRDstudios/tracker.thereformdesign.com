@@ -38,10 +38,10 @@ export async function createTask(formData: FormData) {
       title: parsed.title,
       description: parsed.description ?? null,
       projectId: parsed.projectId ?? null,
-      assigneeId: parsed.assigneeId ?? null,
+      assigneeId: parsed.assigneeId,
       priority: parsed.priority,
       creatorId: session.user.id,
-      dueDate: parsed.dueDate ? new Date(parsed.dueDate) : null,
+      dueDate: new Date(parsed.dueDate),
     })
     .returning();
 
@@ -139,9 +139,9 @@ export async function updateTask(id: string, formData: FormData) {
       title: parsed.title,
       description: parsed.description ?? null,
       projectId: parsed.projectId ?? null,
-      assigneeId: parsed.assigneeId ?? null,
+      assigneeId: parsed.assigneeId,
       priority: parsed.priority,
-      dueDate: parsed.dueDate ? new Date(parsed.dueDate) : null,
+      dueDate: new Date(parsed.dueDate),
       updatedAt: new Date(),
     })
     .where(eq(tasks.id, id));
