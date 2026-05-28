@@ -149,27 +149,9 @@ export function AgGridTasks({
       filter: "agTextColumnFilter",
       filterParams: textFilterParams,
       floatingFilter: true,
-      cellRenderer: (params: ICellRendererParams) => {
-        const st = params.data?.subtasks as { id: string; title: string }[] | undefined;
-        return (
-          <div>
-            <span className="font-medium text-[#1d1d1d]">{params.value || ""}</span>
-            {st?.length ? (
-              <div className="mt-0.5 space-y-0.5">
-                {st.slice(0, 3).map((s) => (
-                  <div key={s.id} className="flex items-center gap-1.5 pl-3">
-                    <div className="h-1 w-1 rounded-full bg-[#a1a1a1]" />
-                    <span className="text-[11px] text-[#a1a1a1]">{s.title}</span>
-                  </div>
-                ))}
-                {st.length > 3 ? (
-                  <div className="pl-3 text-[11px] text-[#a1a1a1]/50">+{st.length - 3} more</div>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        );
-      },
+      cellRenderer: (params: ICellRendererParams) => (
+        <span className="font-medium text-[#1d1d1d]">{params.value || ""}</span>
+      ),
     },
     {
       field: "status",

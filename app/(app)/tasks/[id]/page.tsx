@@ -79,6 +79,14 @@ export default async function TaskDetailPage(props: {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <nav className="flex items-center gap-2 text-sm text-[#a1a1a1]">
+        <Link href="/dashboard" className="hover:text-[#1d1d1d] transition-colors">Dashboard</Link>
+        <span>/</span>
+        <Link href="/tasks" className="hover:text-[#1d1d1d] transition-colors">Tasks</Link>
+        <span>/</span>
+        <span className="text-[#1d1d1d] font-medium truncate max-w-[200px]">{task.displayId || task.id}</span>
+      </nav>
+
       <div className="flex items-center gap-3">
         {task.displayId && (
           <span className="rounded-md bg-[#f5eb10]/20 px-2 py-0.5 font-mono text-xs font-semibold text-[#1d1d1d]">
